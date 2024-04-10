@@ -39,3 +39,7 @@ func (b *BaseInstance[T]) GetInstance(constructor func() T) *T {
 	// Retorna la instancia de T.
 	return data.instance.(*T)
 }
+
+func NewInstance[T any]() *BaseInstance[T] {
+	return &BaseInstance[T]{}
+}
