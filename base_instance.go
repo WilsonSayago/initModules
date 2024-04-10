@@ -1,20 +1,41 @@
 package initModules
 
-import "sync"
+import (
+	"reflect"
+	"sync"
+)
+
+var registry = make(map[reflect.Type]*baseInstanceData)
+var registryLock = sync.Mutex{}
+
+type baseInstanceData struct {
+	once     sync.Once
+	instance interface{}
+}
 
 type BaseInstance[T any] struct {
-	instance *T
-	once     sync.Once
 }
 
 func (b *BaseInstance[T]) GetInstance(constructor func() T) *T {
-	b.once.Do(func() {
-		instance := constructor()
-		b.instance = &instance
-	})
-	return b.instance
-}
+	// Obtiene el tipo de T.
+	tType := reflect.TypeOf((*T)(nil)).Elem()
 
-func NewInstance[T any]() *BaseInstance[T] {
-	return &BaseInstance[T]{}
+	registryLock.Lock()
+	defer registryLock.Unlock()
+
+	// Encuentra o crea el contenedor de datos base para el tipo T.
+	data, exists := registry[tType]
+	if !exists {
+		data = &baseInstanceData{}
+		registry[tType] = data
+	}
+
+	// Utiliza sync.Once para garantizar que la instancia solo se cree una vez.
+	data.once.Do(func() {
+		instance := constructor()
+		data.instance = &instance
+	})
+
+	// Retorna la instancia de T.
+	return data.instance.(*T)
 }
