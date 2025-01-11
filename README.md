@@ -2,91 +2,100 @@
 
 # Go Init Component Library
 
-La biblioteca Init Component proporciona una solución integral para la inicialización de configuraciones y la gestión de procesos en aplicaciones Go. Facilita la carga dinámica de propiedades desde archivos y permite el registro y ejecución concurrente de procesos, todo mientras maneja señales del sistema operativo para una terminación controlada.
+The Init Component library provides a comprehensive solution for configuration initialization and process management in
+Go applications. It facilitates dynamic loading of properties from files and allows the registration and concurrent
+execution of processes, all while handling operating system signals for controlled termination.
 
-## Características
+## Features
 
-- Carga dinámica de propiedades de configuración desde archivos YAML o Properties.
-- Registro y ejecución concurrente de procesos definidos por el usuario.
-- Manejo de señales del sistema operativo para terminación de la aplicación.
-- Validación de propiedades de configuración mediante la implementación de una interfaz específica.
+## Features
 
-## Instalación
+- Dynamic loading of configuration properties from YAML or Properties files.
+- Registration and concurrent execution of user-defined processes.
+- Handling of operating system signals for application termination.
+- Validation of configuration properties through the implementation of a specific interface.
+- Singleton pattern implementation for creating and retrieving instances using a unique key with the `GetInstance`
+  function.
 
-Para utilizar esta biblioteca, asegúrate de que Go esté instalado en tu sistema. Luego, incorpora los archivos de la biblioteca en tu proyecto según sea necesario, respetando la estructura de paquetes de Go.
+## Installation
 
-## Uso
+To use this library, ensure that Go is installed on your system. Then, incorporate the library files into your project
+as needed, respecting Go's package structure.
 
-### Inicialización y Ejecución
+## Usage
 
-Para inicializar y ejecutar la carga de propiedades y procesos:
+### Initialization and Execution
 
-1. **Inicializa la carga de propiedades y procesos**:
+To initialize and execute the loading of properties and processes:
 
-```go
-package main
+1. **Initialize the loading of properties and processes**:
 
-import "tu/proyecto/initComponent"
-
-func main() {
-    initComponent.Run(true, true) // Habilita tanto la carga de propiedades como la de procesos
-}
-```
-
-2. **Manejo de señales del sistema operativo**:
-
-La función `Run` inicia la carga de propiedades y procesos, y luego espera señales del sistema operativo (como `SIGINT` o `SIGTERM`) para terminar la aplicación de manera controlada.
-
-### Trabajando con Propiedades
-
-1. **Define y valida tus propiedades de configuración**:
-
-```go
-type AppConfig struct {
-    Port int `yaml:"port"`
-}
-
-func (c *AppConfig) Validate() {
-    if c.Port <= 0 {
-        log.Fatal("Port must be greater than 0")
+    ```go
+    package main
+    
+    import "your/project/initModules"
+    
+    func main() {
+        initModules.Run(true, true) // Enable both property loading and process loading
     }
-}
-```
+    ```
 
-2. **Carga tus propiedades de configuración**:
+### Working with Properties
 
-Configura el tipo y la ruta del archivo de propiedades y añade tu estructura de configuración para cargarla y validarla:
+1. **Define and validate your configuration properties:**
+
+    ```go
+    type AppConfig struct {
+      Port int `yaml:"port"`
+    }
+    
+    func NewAppConfig() AppConfig {
+      return AppConfig{}
+    }
+    
+    func (c *AppConfig) Validate() {
+        if c.Port <= 0 {
+          log.Fatal("Port must be greater than 0")
+        }
+    }
+    ```
+
+2. **Load your configuration properties:**
+
+Set the type and path of the properties file and add your configuration structure to load and validate it:
 
 ```go
-initComponent.SetFilePath(initComponent.YML, "path/to/your/config.yml")
-var myConfig AppConfig
-initComponent.AddProp(&myConfig)
+initModules.SetFilePath(initComponent.YML, "path/to/your/config.yml")
+initModules.AddProp(initModules.NewInstance[prop.AppConfig]().GetInstance(prop.NewAppConfig))
+initModules.RunLoadProperties()
 ```
 
-### Registro y Ejecución de Procesos
+### Registering and Executing Processes
 
-1. **Define tus procesos**:
+1. Create a struct for your processes:
 
+    ```go
+    package instance
+    
+    import "your/project/initModules"
+    
+    type TestInstance struct {}
+    
+    func GetTestInstance() *TestInstance {
+      instance := initModules.GetInstance("TestInstance", func () interface{} {
+        return &TestInstance{}
+      })
+      return instance.(*TestInstance)
+    }
+    ```
+
+1. Register your processes:
+    
 ```go
-type MyProcess struct {}
-
-func (p *MyProcess) Start() {
-    // Lógica de inicio del proceso
-}
+initModules.RegisterProcess(instance.GetTestInstance())
 ```
 
-2. **Registra y ejecuta tus procesos**:
+The RunProcesses function is called automatically if enableLoadProcesses is set to true during the call to Run.
 
-```go
-initComponent.RegisterProcess(&MyProcess{})
-```
-
-La función `RunProcesses` se llama automáticamente si `enableLoadProcesses` se establece en `true` durante la llamada a `Run`.
-
-## Ejemplo Completo
-
-Un ejemplo completo demostrando la inicialización, carga de propiedades, registro y ejecución de procesos, y el manejo de señales del sistema operativo está incluido en los archivos de código fuente.
-
-## Contribuciones
-
-Las contribuciones son bienvenidas. Por favor, siente libre de fork el repositorio, realizar cambios y enviar un pull request para su revisión.
+### Contributions
+Contributions are welcome.
