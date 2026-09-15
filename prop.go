@@ -6,8 +6,17 @@ import (
 
 type PropType int
 
+// Prop is a configuration target that validates itself after a successful decode.
+//
+// Deprecated: implement PropValidator so validation can return an error.
 type Prop interface {
 	Validate()
+}
+
+// PropValidator is a configuration target that validates itself after a successful decode.
+// If a target implements PropValidator, that method is used and Prop.Validate is not called.
+type PropValidator interface {
+	Validate() error
 }
 
 const (

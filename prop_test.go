@@ -1,6 +1,7 @@
 package initModules
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -8,6 +9,8 @@ import (
 
 	"gopkg.in/yaml.v3"
 )
+
+var errInvalidPort = errors.New("invalid port")
 
 type testAppConfig struct {
 	Port int `yaml:"port"`
@@ -30,6 +33,27 @@ func (v *validateTracker) Validate() {
 
 type propertiesOnlyConfig struct {
 	Port int `properties:"port"`
+}
+
+type validatorConfig struct {
+	Port int `yaml:"port"`
+}
+
+func (c *validatorConfig) Validate() error {
+	if c.Port <= 0 {
+		return errInvalidPort
+	}
+	return nil
+}
+
+type validatorTracker struct {
+	Port            int `yaml:"port"`
+	ValidateInvoked bool
+}
+
+func (v *validatorTracker) Validate() error {
+	v.ValidateInvoked = true
+	return nil
 }
 
 func resetPropsForTest(t *testing.T) {
@@ -60,6 +84,7 @@ func TestValidatePropTarget(t *testing.T) {
 		{name: "struct value", input: testAppConfig{}, wantErr: true},
 		{name: "pointer to string", input: new(string), wantErr: true},
 		{name: "nil", input: nil, wantErr: true},
+		{name: "typed nil", input: (*testAppConfig)(nil), wantErr: true},
 	}
 
 	for _, tt := range tests {
@@ -222,6 +247,60 @@ func TestProcessLoadedProp_SkipsValidateOnDecodeError(t *testing.T) {
 	}
 	if tracker.ValidateInvoked {
 		t.Fatal("Validate must not run when decode fails")
+	}
+}
+
+func TestProcessLoadedProp_PropValidatorSuccess(t *testing.T) {
+	t.Parallel()
+
+	tracker := &validatorTracker{Port: 8080}
+	if err := processLoadedProp(tracker, nil); err != nil {
+		t.Fatalf("processLoadedProp: %v", err)
+	}
+	if !tracker.ValidateInvoked {
+		t.Fatal("expected PropValidator.Validate to run")
+	}
+}
+
+func TestProcessLoadedProp_PropValidatorError(t *testing.T) {
+	t.Parallel()
+
+	cfg := &validatorConfig{Port: 0}
+	err := processLoadedProp(cfg, nil)
+	if !errors.Is(err, errInvalidPort) {
+		t.Fatalf("error = %v, want errors.Is(_, errInvalidPort)", err)
+	}
+	if !strings.Contains(err.Error(), "validate") {
+		t.Fatalf("error = %v, want wrapped target context", err)
+	}
+}
+
+func TestProcessLoadedProp_LegacyPropStillRuns(t *testing.T) {
+	t.Parallel()
+
+	tracker := &validateTracker{Port: 8080}
+	if err := processLoadedProp(tracker, nil); err != nil {
+		t.Fatalf("processLoadedProp: %v", err)
+	}
+	if !tracker.ValidateInvoked {
+		t.Fatal("expected legacy Prop.Validate to run when PropValidator is not implemented")
+	}
+}
+
+func TestProcessLoadedProp_PrefersPropValidator(t *testing.T) {
+	t.Parallel()
+
+	// A single Go type cannot declare both Validate() and Validate() error.
+	// Validate() error selects PropValidator and is the path used for new code.
+	cfg := &validatorConfig{Port: 8080}
+	if _, ok := any(cfg).(PropValidator); !ok {
+		t.Fatal("validatorConfig should implement PropValidator")
+	}
+	if _, ok := any(cfg).(Prop); ok {
+		t.Fatal("Validate() error must not satisfy legacy Prop")
+	}
+	if err := processLoadedProp(cfg, nil); err != nil {
+		t.Fatalf("processLoadedProp: %v", err)
 	}
 }
 

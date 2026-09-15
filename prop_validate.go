@@ -6,8 +6,11 @@ import (
 )
 
 func validatePropTarget(p interface{}) error {
+	if p == nil {
+		return fmt.Errorf("AddProp: parameter must be a pointer to struct, got nil")
+	}
 	value := reflect.ValueOf(p)
-	if value.Kind() != reflect.Ptr || value.Elem().Kind() != reflect.Struct {
+	if value.Kind() != reflect.Ptr || value.IsNil() || value.Elem().Kind() != reflect.Struct {
 		return fmt.Errorf("AddProp: parameter must be a pointer to struct, got %T", p)
 	}
 	return nil
@@ -18,8 +21,18 @@ func processLoadedProp(p interface{}, decodeErr error) error {
 	if decodeErr != nil {
 		return decodeErr
 	}
-	if value := reflect.TypeOf(p); value.Implements(reflect.TypeOf((*Prop)(nil)).Elem()) {
-		p.(Prop).Validate()
+	return validateLoadedProp(p)
+}
+
+func validateLoadedProp(p interface{}) error {
+	if v, ok := p.(PropValidator); ok {
+		if err := v.Validate(); err != nil {
+			return fmt.Errorf("validate %T: %w", p, err)
+		}
+		return nil
+	}
+	if v, ok := p.(Prop); ok {
+		v.Validate()
 	}
 	return nil
 }
