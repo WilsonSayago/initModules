@@ -71,9 +71,10 @@ func (a *App) run(ctx context.Context, stopTimeout time.Duration) error {
 		log.Println("Starting:", lifecycleName(lc))
 		if err := lc.Start(ctx); err != nil {
 			stopCtx, cancel := context.WithTimeout(context.Background(), stopTimeout)
-			a.stopAll(stopCtx, started)
+			stopErr := a.stopAll(stopCtx, started)
 			cancel()
-			return fmt.Errorf("start %s: %w", lifecycleName(lc), err)
+			startErr := fmt.Errorf("start %s: %w", lifecycleName(lc), err)
+			return errors.Join(startErr, stopErr)
 		}
 		started = append(started, lc)
 	}
@@ -83,21 +84,24 @@ func (a *App) run(ctx context.Context, stopTimeout time.Duration) error {
 	stopCtx, cancel := context.WithTimeout(context.Background(), stopTimeout)
 	defer cancel()
 
-	a.stopAll(stopCtx, started)
+	stopErr := a.stopAll(stopCtx, started)
 	if errors.Is(ctx.Err(), context.Canceled) {
-		return nil
+		return stopErr
 	}
-	return ctx.Err()
+	return errors.Join(ctx.Err(), stopErr)
 }
 
-func (a *App) stopAll(ctx context.Context, started []Lifecycle) {
+func (a *App) stopAll(ctx context.Context, started []Lifecycle) error {
+	var errs []error
 	for i := len(started) - 1; i >= 0; i-- {
 		lc := started[i]
 		log.Println("Stopping:", lifecycleName(lc))
 		if err := lc.Stop(ctx); err != nil {
 			log.Printf("Stop %s: %v", lifecycleName(lc), err)
+			errs = append(errs, fmt.Errorf("stop %s: %w", lifecycleName(lc), err))
 		}
 	}
+	return errors.Join(errs...)
 }
 
 func lifecycleName(lc Lifecycle) string {
@@ -121,7 +125,7 @@ func RunWithSignals(ctx context.Context, opts RunOptions) error {
 	defer stop()
 
 	err := RunContext(ctx, opts)
-	if err != nil && errors.Is(err, context.Canceled) {
+	if err == context.Canceled {
 		return nil
 	}
 	return err
