@@ -28,7 +28,7 @@ if err := initModules.LoadProperties(
 ); err != nil { log.Fatal(err) }
 ```
 
-Implement `PropValidator` (`Validate() error`) on new config structs. `Prop.Validate()` remains in v1 and is only used when the target does not implement `PropValidator`. Enable `WithStrictYAML(true)` and `WithStrictEnv(true)` for new services; the v1 defaults stay non-strict. Loads are atomic: failed decode or validation leaves previous target values unchanged. External side effects performed inside `Validate` are not reversible.
+Implement `PropValidator` (`Validate() error`) on new config structs. `Prop.Validate()` remains in v1 and is only used when the target does not implement `PropValidator`. Enable `WithStrictYAML(true)` and `WithStrictEnv(true)` for new services; the v1 defaults stay non-strict. Loads are atomic: failed decode or validation leaves previous target values unchanged, including constructor defaults for omitted fields. External side effects performed inside `Validate` are not reversible.
 
 ### Singletons
 

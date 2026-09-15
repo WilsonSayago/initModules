@@ -88,7 +88,7 @@ if err := initModules.LoadProperties(
 }
 ```
 
-v1 defaults keep compatibility: env expansion uses `os.ExpandEnv` (`$NAME` and `${NAME}`), unknown YAML keys are ignored, and `Prop.Validate()` has no error return. New services should implement `PropValidator` (`Validate() error`) and enable `WithStrictYAML(true)` plus `WithStrictEnv(true)`. Loading is atomic: if any target fails to decode or validate, none of the registered structs are updated. Side effects inside a consumer `Validate` are not rolled back.
+v1 defaults keep compatibility: env expansion uses `os.ExpandEnv` (`$NAME` and `${NAME}`), unknown YAML keys are ignored, and `Prop.Validate()` has no error return. New services should implement `PropValidator` (`Validate() error`) and enable `WithStrictYAML(true)` plus `WithStrictEnv(true)`. Loading is atomic: decode and validation run on independent copies, so if any target fails none of the registered structs are updated, and omitted fields keep constructor defaults. Side effects inside a consumer `Validate` are not rolled back.
 
 Strict YAML accepts a single target; group sections in one root struct. Strict env expands only `${NAME}`, errors when `NAME` is unset (empty but set is allowed), and treats `$$` as a literal `$`. Error messages include the variable name, never the value.
 

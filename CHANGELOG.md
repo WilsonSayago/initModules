@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `PropValidator` with `Validate() error`; `Prop` remains for v1 compatibility.
 - `WithStrictYAML` — opt-in unknown-field rejection for a single YAML target.
 - `WithStrictEnv` — opt-in `${NAME}` expansion that errors on unset variables and maps `$$` to `$`.
-- Atomic config load: decode and validate copies, then commit only if every target succeeds.
+- atomic config load: decode and validate independent copies of current values, then commit only if every target succeeds. Omitted fields keep constructor defaults; pre-existing maps, slices, and pointers are not mutated on failure.
 
 ### Changed
 

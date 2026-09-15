@@ -25,6 +25,30 @@ leer el plan completo, respetar sus condiciones de parada y actualizar su fila.
 Valores: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED (<razón>)` o
 `REJECTED (<razón>)`.
 
+## Registro de verificación
+
+- **Plan 001 — verificado 2026-09-15 en `ecb6389`**: alcance correcto y árbol
+  limpio; pasan formato, YAML, `git diff --check`, `go vet`, `go test -count=20
+  ./...`, 50 repeticiones de lifecycle/adaptador, el módulo standalone y
+  `go test -race` con cobertura atómica de 71,8 % usando Go 1.26.3. La ejecución
+  remota de GitHub Actions y `golangci-lint` quedan sin observar: la rama no está
+  publicada y el binario del linter no está instalado localmente.
+- **Plan 002 — verificado 2026-09-15 en `acf4670`**: alcance limitado a
+  `app.go`, `app_test.go` e índice; pasan 20 y 50 repeticiones enfocadas, suite
+  completa repetida, race detector, `go vet`, formato y `git diff --check`.
+  Los tests verifican errores unidos de startup/rollback, best-effort y orden
+  inverso de `Stop`, cancelación limpia, deadline y timeout de apagado.
+- **Plan 003 — revisión 2026-09-15 en `ac44dc3`: REVISE**. Pasan tests config,
+  100 repeticiones de atomicidad/strict, suite repetida, race, vet, formato,
+  ejemplo y diff; el alcance también es correcto. Bloquea aprobación que
+  `newTempTarget` parte desde cero: un load exitoso parcial reemplaza defaults
+  preexistentes por ceros, en vez de conservar el comportamiento v1. Falta una
+  prueba de defaults y de no-aliasing para mapas, slices y punteros.
+- **Plan 003 — corregido**: `newTempTarget` ahora clona el valor actual en
+  profundidad; un campo omitido conserva su default y los fallos no mutan mapas,
+  slices ni punteros preexistentes. Pasan tests config, 100 repeticiones de
+  atomicidad/defaults/aliasing, suite repetida, race, vet, formato y ejemplo.
+
 ## Dependencias
 
 - 001 crea una señal de pruebas repetible; todos los cambios posteriores se
@@ -54,4 +78,3 @@ Valores: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED (<razón>)` o
   ruta la proporciona código de bootstrap confiable, no una entrada remota.
 - Añadir una licencia elegida por el ejecutor: descartado; la elección legal debe
   hacerla el propietario. El plan 007 bloquea la release hasta resolverla.
-

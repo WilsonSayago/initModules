@@ -1,0 +1,7 @@
+port: 8080
+labels:
+  injected: bad
+items:
+  - mutated
+nested:
+  value: 99

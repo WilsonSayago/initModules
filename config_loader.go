@@ -245,8 +245,80 @@ func newTempTarget(target interface{}) (interface{}, error) {
 	if err := validatePropTarget(target); err != nil {
 		return nil, err
 	}
-	elemType := reflect.ValueOf(target).Elem().Type()
-	return reflect.New(elemType).Interface(), nil
+	src := reflect.ValueOf(target).Elem()
+	dst := reflect.New(src.Type())
+	dst.Elem().Set(cloneValue(src))
+	return dst.Interface(), nil
+}
+
+func cloneValue(v reflect.Value) reflect.Value {
+	if !v.IsValid() {
+		return v
+	}
+	switch v.Kind() {
+	case reflect.Pointer:
+		if v.IsNil() {
+			return reflect.Zero(v.Type())
+		}
+		cp := reflect.New(v.Elem().Type())
+		cp.Elem().Set(cloneValue(v.Elem()))
+		return cp
+	case reflect.Slice:
+		if v.IsNil() {
+			return reflect.Zero(v.Type())
+		}
+		cp := reflect.MakeSlice(v.Type(), v.Len(), v.Len())
+		for i := 0; i < v.Len(); i++ {
+			cp.Index(i).Set(cloneValue(v.Index(i)))
+		}
+		return cp
+	case reflect.Map:
+		if v.IsNil() {
+			return reflect.Zero(v.Type())
+		}
+		cp := reflect.MakeMapWithSize(v.Type(), v.Len())
+		iter := v.MapRange()
+		for iter.Next() {
+			cp.SetMapIndex(cloneValue(iter.Key()), cloneValue(iter.Value()))
+		}
+		return cp
+	case reflect.Array:
+		cp := reflect.New(v.Type()).Elem()
+		for i := 0; i < v.Len(); i++ {
+			cp.Index(i).Set(cloneValue(v.Index(i)))
+		}
+		return cp
+	case reflect.Struct:
+		return cloneStruct(v)
+	case reflect.Interface:
+		if v.IsNil() {
+			return reflect.Zero(v.Type())
+		}
+		cp := reflect.New(v.Type()).Elem()
+		cp.Set(cloneValue(v.Elem()))
+		return cp
+	default:
+		cp := reflect.New(v.Type()).Elem()
+		cp.Set(v)
+		return cp
+	}
+}
+
+func cloneStruct(v reflect.Value) reflect.Value {
+	cp := reflect.New(v.Type()).Elem()
+	cp.Set(v)
+	for i := 0; i < v.NumField(); i++ {
+		dst := cp.Field(i)
+		if !dst.CanSet() {
+			continue
+		}
+		src := v.Field(i)
+		switch src.Kind() {
+		case reflect.Pointer, reflect.Slice, reflect.Map, reflect.Array, reflect.Struct, reflect.Interface:
+			dst.Set(cloneValue(src))
+		}
+	}
+	return cp
 }
 
 func commitTargets(dsts, srcs []interface{}) {

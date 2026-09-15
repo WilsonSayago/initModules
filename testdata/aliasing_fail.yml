@@ -1,0 +1,7 @@
+labels:
+  injected: bad
+items:
+  - mutated
+nested:
+  value: 99
+port: [not-an-int]
