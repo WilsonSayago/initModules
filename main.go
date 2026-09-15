@@ -25,7 +25,7 @@ func Init(enableLoadProp bool, enableLoadProcesses bool) {
 func Run(enableLoadProp bool, enableLoadProcesses bool) {
 	if err := RunWithSignals(context.Background(), RunOptions{
 		LoadProperties: enableLoadProp,
-		RunLifecycles: enableLoadProcesses,
+		RunLifecycles:  enableLoadProcesses,
 	}); err != nil {
 		log.Fatal(err)
 	}

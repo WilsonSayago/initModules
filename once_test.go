@@ -22,8 +22,14 @@ type onceValueStructLegacy struct {
 	ID int
 }
 
+func resetGlobalSingletonsForTest(t *testing.T) {
+	t.Helper()
+	globalSingletons.Clear()
+	t.Cleanup(globalSingletons.Clear)
+}
+
 func TestOnceValue_Concurrent(t *testing.T) {
-	t.Parallel()
+	resetGlobalSingletonsForTest(t)
 
 	var count atomic.Int32
 	var wg sync.WaitGroup
@@ -56,7 +62,7 @@ func TestOnceValue_Concurrent(t *testing.T) {
 }
 
 func TestOnce_PointerConstructor_Concurrent(t *testing.T) {
-	t.Parallel()
+	resetGlobalSingletonsForTest(t)
 
 	var count atomic.Int32
 	var wg sync.WaitGroup
@@ -89,7 +95,7 @@ func TestOnce_PointerConstructor_Concurrent(t *testing.T) {
 }
 
 func TestContainer_OnceIn_IsolatedFromGlobal(t *testing.T) {
-	t.Parallel()
+	resetGlobalSingletonsForTest(t)
 
 	global := OnceValue(func() onceValueStructContainer { return onceValueStructContainer{ID: 1} })
 
@@ -111,6 +117,8 @@ func TestContainer_OnceIn_IsolatedFromGlobal(t *testing.T) {
 }
 
 func TestBaseInstance_BackwardCompatible(t *testing.T) {
+	resetGlobalSingletonsForTest(t)
+
 	var count atomic.Int32
 	a := NewInstance[onceValueStructLegacy]().GetInstance(func() onceValueStructLegacy {
 		count.Add(1)

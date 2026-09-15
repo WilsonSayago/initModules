@@ -34,9 +34,13 @@ type propertiesOnlyConfig struct {
 
 func resetPropsForTest(t *testing.T) {
 	t.Helper()
-	props = nil
-	propPath = "resources/properties.yml"
-	propType = YML
+	reset := func() {
+		props = nil
+		propPath = "resources/properties.yml"
+		propType = YML
+	}
+	reset()
+	t.Cleanup(reset)
 }
 
 func testdataPath(t *testing.T, name string) string {
@@ -89,11 +93,11 @@ func TestAddPropE(t *testing.T) {
 
 func TestLoadProperties(t *testing.T) {
 	tests := []struct {
-		name        string
-		file        string
-		format      PropType
-		expandEnv   bool
-		env         map[string]string
+		name           string
+		file           string
+		format         PropType
+		expandEnv      bool
+		env            map[string]string
 		wantPort       int
 		wantErr        bool
 		wantValidate   bool
@@ -107,25 +111,25 @@ func TestLoadProperties(t *testing.T) {
 			wantValidate: true,
 		},
 		{
-			name:     "invalid yaml",
-			file:     "invalid.yml",
-			format:   YML,
-			wantErr:  true,
+			name:    "invalid yaml",
+			file:    "invalid.yml",
+			format:  YML,
+			wantErr: true,
 		},
 		{
-			name:       "yaml env expand",
-			file:       "env_expand.yml",
-			format:     YML,
-			expandEnv:  true,
-			env:        map[string]string{"TEST_INITMODULES_PORT": "7777"},
-			wantPort:   7777,
+			name:         "yaml env expand",
+			file:         "env_expand.yml",
+			format:       YML,
+			expandEnv:    true,
+			env:          map[string]string{"TEST_INITMODULES_PORT": "7777"},
+			wantPort:     7777,
 			wantValidate: true,
 		},
 		{
-			name:     "valid properties",
-			file:     "valid.properties",
-			format:   PROPERTIES,
-			wantPort: 9090,
+			name:           "valid properties",
+			file:           "valid.properties",
+			format:         PROPERTIES,
+			wantPort:       9090,
 			usePropsConfig: true,
 		},
 	}

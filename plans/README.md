@@ -14,7 +14,7 @@ leer el plan completo, respetar sus condiciones de parada y actualizar su fila.
 
 | Plan | Título | Prioridad | Esfuerzo | Depende de | Estado |
 |------|--------|-----------|----------|------------|--------|
-| 001 | Estabilizar la verificación local y CI | P1 | M | — | TODO |
+| 001 | Estabilizar la verificación local y CI | P1 | M | — | DONE |
 | 002 | Propagar errores de apagado de lifecycles | P1 | M | 001 | TODO |
 | 003 | Hacer la carga de configuración validable, estricta y atómica | P1 | L | 001 | TODO |
 | 004 | Convertir `App` en una unidad realmente aislada | P1 | L | 002 | TODO |

@@ -6,10 +6,18 @@ import (
 	"testing"
 )
 
-func TestGetInstance_ConcurrentSameKey(t *testing.T) {
-	t.Parallel()
+func resetInstanceKeyForTest(t *testing.T, key string) {
+	t.Helper()
+	instances.Delete(key)
+	t.Cleanup(func() {
+		instances.Delete(key)
+	})
+}
 
+func TestGetInstance_ConcurrentSameKey(t *testing.T) {
 	const key = "concurrent-test-key"
+	resetInstanceKeyForTest(t, key)
+
 	var constructCount atomic.Int32
 
 	var wg sync.WaitGroup
@@ -42,7 +50,9 @@ func TestGetInstance_ConcurrentSameKey(t *testing.T) {
 }
 
 func TestGetInstance_ReusesExistingWithoutCallingFactory(t *testing.T) {
-	key := "reuse-key"
+	const key = "reuse-key"
+	resetInstanceKeyForTest(t, key)
+
 	var count atomic.Int32
 
 	first := GetInstance(key, func() interface{} {

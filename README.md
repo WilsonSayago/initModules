@@ -135,13 +135,16 @@ Reference: `groowcity-cron`, `rabbitmq-golang`.
 ## Development
 
 ```sh
-make test    # go test -race -cover
-make vet     # go vet ./...
-make lint    # golangci-lint (install: https://golangci-lint.run/welcome/install/)
-make ci      # vet + test + lint
+make fmt-check  # verify gofmt
+make test       # repeat unit tests 20 times
+make test-race  # race detector + atomic coverage
+make vet        # go vet ./...
+make example    # test the standalone nested module
+make lint       # golangci-lint (install: https://golangci-lint.run/welcome/install/)
+make ci         # run all local CI gates
 ```
 
-CI runs on every push/PR: `go vet`, `go test -race -cover`, `golangci-lint`.
+CI runs the same formatting, repeated test, race/coverage, vet, nested-module, and lint gates on every push/PR.
 
 ## Migration
 

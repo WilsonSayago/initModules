@@ -27,11 +27,23 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      - name: Check formatting
+        run: make fmt-check
+
       - name: Go vet
-        run: go vet ./...
+        run: make vet
+
+      - name: Test (repeated)
+        run: make test
 
       - name: Test (race + coverage)
-        run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
+        run: make test-race
+
+      - name: Test standalone example
+        working-directory: examples/standalone
+        env:
+          GOWORK: "off"
+        run: go test ./...
 
       - name: Upload coverage
         uses: actions/upload-artifact@v4
