@@ -20,10 +20,11 @@ func NewAppConfig() AppConfig {
 	return AppConfig{}
 }
 
-func (c *AppConfig) Validate() {
+func (c *AppConfig) Validate() error {
 	if c.Port <= 0 {
-		log.Fatal("port must be greater than 0")
+		return fmt.Errorf("port must be greater than 0")
 	}
+	return nil
 }
 
 func main() {
@@ -35,6 +36,8 @@ func main() {
 	if err := initModules.LoadProperties(
 		initModules.WithFilePath("config.yml"),
 		initModules.WithFormat(initModules.YML),
+		initModules.WithStrictYAML(true),
+		initModules.WithStrictEnv(true),
 	); err != nil {
 		log.Fatal(err)
 	}

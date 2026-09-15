@@ -28,6 +28,8 @@ func main() {
     if err := initModules.LoadProperties(
         initModules.WithFilePath("internal/resources/properties.yml"),
         initModules.WithFormat(initModules.YML),
+        initModules.WithStrictYAML(true),
+        initModules.WithStrictEnv(true),
     ); err != nil {
         log.Fatal(err)
     }
@@ -60,7 +62,9 @@ In a **go.work** monorepo, add `use ./initModules` and depend on the local modul
 ## Features
 
 - YAML / `.properties` config with `${ENV}` expansion
-- `Prop` validation after successful decode
+- `PropValidator` after successful decode (`Prop` remains for v1 compatibility)
+- Optional strict YAML (`WithStrictYAML`) and strict env (`WithStrictEnv`)
+- Atomic config load: targets are not mutated unless decode and validation succeed for all of them
 - `Once` / `OnceValue` / `Container` singletons (thread-safe)
 - `Lifecycle` with ordered `Start` / `Stop` and signal-aware `RunWithSignals`
 - Legacy compatibility: `IProcess`, `GetInstance(string)` (deprecated)
@@ -77,10 +81,16 @@ See [examples/standalone](examples/standalone).
 if err := initModules.LoadProperties(
     initModules.WithFilePath("config.yml"),
     initModules.WithFormat(initModules.YML),
+    initModules.WithStrictYAML(true),
+    initModules.WithStrictEnv(true),
 ); err != nil {
     log.Fatal(err)
 }
 ```
+
+v1 defaults keep compatibility: env expansion uses `os.ExpandEnv` (`$NAME` and `${NAME}`), unknown YAML keys are ignored, and `Prop.Validate()` has no error return. New services should implement `PropValidator` (`Validate() error`) and enable `WithStrictYAML(true)` plus `WithStrictEnv(true)`. Loading is atomic: if any target fails to decode or validate, none of the registered structs are updated. Side effects inside a consumer `Validate` are not rolled back.
+
+Strict YAML accepts a single target; group sections in one root struct. Strict env expands only `${NAME}`, errors when `NAME` is unset (empty but set is allowed), and treats `$$` as a literal `$`. Error messages include the variable name, never the value.
 
 ### Config + database
 
@@ -119,7 +129,7 @@ Reference: `groowcity-cron`, `rabbitmq-golang`.
 
 | Task | API |
 |------|-----|
-| Load config | `AddPropE`, `LoadProperties`, `NewConfigLoader` |
+| Load config | `AddPropE`, `LoadProperties`, `NewConfigLoader`, `PropValidator` |
 | Singleton | `OnceValue`, `Once`, `OnceIn` |
 | Graceful run | `Register`, `RunWithSignals`, `RunContext` |
 | Legacy | `Run`, `RegisterProcess`, `GetInstance` (deprecated) |

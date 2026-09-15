@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `PropValidator` with `Validate() error`; `Prop` remains for v1 compatibility.
+- `WithStrictYAML` — opt-in unknown-field rejection for a single YAML target.
+- `WithStrictEnv` — opt-in `${NAME}` expansion that errors on unset variables and maps `$$` to `$`.
+- Atomic config load: decode and validate copies, then commit only if every target succeeds.
+
+### Changed
+
+- Invalid options, empty target lists, typed-nil targets, and unsupported formats are rejected before reading the file.
+- Shutdown-unrelated config errors wrap the operation and filename without embedding env values or file contents.
+
+### Deprecated
+
+- `Prop` (`Validate()` with no error) — prefer `PropValidator`.
+
 ## [1.6.0] - 2026-05-26
 
 ### Added

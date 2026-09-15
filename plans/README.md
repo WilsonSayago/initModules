@@ -16,7 +16,7 @@ leer el plan completo, respetar sus condiciones de parada y actualizar su fila.
 |------|--------|-----------|----------|------------|--------|
 | 001 | Estabilizar la verificación local y CI | P1 | M | — | DONE |
 | 002 | Propagar errores de apagado de lifecycles | P1 | M | 001 | DONE |
-| 003 | Hacer la carga de configuración validable, estricta y atómica | P1 | L | 001 | TODO |
+| 003 | Hacer la carga de configuración validable, estricta y atómica | P1 | L | 001 | DONE |
 | 004 | Convertir `App` en una unidad realmente aislada | P1 | L | 002 | TODO |
 | 005 | Endurecer contenedores y adaptadores heredados | P2 | M | 001, 004 | TODO |
 | 006 | Actualizar Go, dependencias y supply chain de CI | P1 | L | 001–005 | TODO |

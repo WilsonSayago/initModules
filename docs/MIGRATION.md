@@ -23,8 +23,12 @@ if err := initModules.AddPropE(initModules.OnceValue(NewCfg)); err != nil { log.
 if err := initModules.LoadProperties(
     initModules.WithFilePath("config.yml"),
     initModules.WithFormat(initModules.YML),
+    initModules.WithStrictYAML(true),
+    initModules.WithStrictEnv(true),
 ); err != nil { log.Fatal(err) }
 ```
+
+Implement `PropValidator` (`Validate() error`) on new config structs. `Prop.Validate()` remains in v1 and is only used when the target does not implement `PropValidator`. Enable `WithStrictYAML(true)` and `WithStrictEnv(true)` for new services; the v1 defaults stay non-strict. Loads are atomic: failed decode or validation leaves previous target values unchanged. External side effects performed inside `Validate` are not reversible.
 
 ### Singletons
 
@@ -67,6 +71,7 @@ The following will be **removed** in v2:
 |---------|-------------|
 | `GetInstance(string, …)` | `Once` / `OnceValue` / service `Container` |
 | `SetFilePath`, `AddProp`, `RunLoadProperties` | `LoadProperties(opts…)` only |
+| `Prop` (`Validate()`) | `PropValidator` (`Validate() error`) |
 | `IProcess` + `RegisterProcess` | `Lifecycle` only |
 | `log.Fatal` inside library | Always return `error` to `main` |
 
