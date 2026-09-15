@@ -1,101 +1,158 @@
-# init-modules
+# initModules
 
-# Go Init Component Library
+[![Go](https://img.shields.io/badge/Go-1.26.3+-00ADD8?logo=go&logoColor=white)](https://go.dev/dl/)
+[![CI](https://github.com/WilsonSayago/initModules/actions/workflows/ci.yml/badge.svg)](https://github.com/WilsonSayago/initModules/actions/workflows/ci.yml)
 
-The Init Component library provides a comprehensive solution for configuration initialization and process management in
-Go applications. It facilitates dynamic loading of properties from files and allows the registration and concurrent
-execution of processes, all while handling operating system signals for controlled termination.
+Shared **bootstrap toolkit** for Go microservices: configuration loading, type-safe singletons, and graceful lifecycle (start/stop with context).
 
-## Features
+> **Go:** requires **1.26.3+** (see `go.mod`).
 
-## Features
+## Quickstart
 
-- Dynamic loading of configuration properties from YAML or Properties files.
-- Registration and concurrent execution of user-defined processes.
-- Handling of operating system signals for application termination.
-- Validation of configuration properties through the implementation of a specific interface.
-- Singleton pattern implementation for creating and retrieving instances using a unique key with the `GetInstance`
-  function.
+```go
+package main
+
+import (
+    "context"
+    "log"
+
+    "github.com/WilsonSayago/initModules"
+)
+
+func main() {
+    cfg := initModules.OnceValue(NewAppConfig)
+
+    if err := initModules.AddPropE(cfg); err != nil {
+        log.Fatal(err)
+    }
+    if err := initModules.LoadProperties(
+        initModules.WithFilePath("internal/resources/properties.yml"),
+        initModules.WithFormat(initModules.YML),
+    ); err != nil {
+        log.Fatal(err)
+    }
+
+    initModules.Register(myService)
+
+    if err := initModules.RunWithSignals(context.Background(), initModules.RunOptions{
+        LoadProperties: false,
+        RunLifecycles:  true,
+    }); err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+Run the minimal example:
+
+```sh
+cd examples/standalone && go run .
+```
 
 ## Installation
 
-To use this library, ensure that Go is installed on your system. Then, incorporate the library files into your project
-as needed, respecting Go's package structure.
-
-## Usage
-
-### Initialization and Execution
-
-To initialize and execute the loading of properties and processes:
-
-1. **Initialize the loading of properties and processes**:
-
-    ```go
-    package main
-    
-    import "your/project/initModules"
-    
-    func main() {
-        initModules.Run(true, true) // Enable both property loading and process loading
-    }
-    ```
-
-### Working with Properties
-
-1. **Define and validate your configuration properties:**
-
-    ```go
-    type AppConfig struct {
-      Port int `yaml:"port"`
-    }
-    
-    func NewAppConfig() AppConfig {
-      return AppConfig{}
-    }
-    
-    func (c *AppConfig) Validate() {
-        if c.Port <= 0 {
-          log.Fatal("Port must be greater than 0")
-        }
-    }
-    ```
-
-2. **Load your configuration properties:**
-
-Set the type and path of the properties file and add your configuration structure to load and validate it:
-
-```go
-initModules.SetFilePath(initComponent.YML, "path/to/your/config.yml")
-initModules.AddProp(initModules.NewInstance[prop.AppConfig]().GetInstance(prop.NewAppConfig))
-initModules.RunLoadProperties()
+```sh
+go get github.com/WilsonSayago/initModules@v1.6.0
 ```
 
-### Registering and Executing Processes
+In a **go.work** monorepo, add `use ./initModules` and depend on the local module path.
 
-1. Create a struct for your processes:
+## Features
 
-    ```go
-    package instance
-    
-    import "your/project/initModules"
-    
-    type TestInstance struct {}
-    
-    func GetTestInstance() *TestInstance {
-      instance := initModules.GetInstance("TestInstance", func () interface{} {
-        return &TestInstance{}
-      })
-      return instance.(*TestInstance)
-    }
-    ```
+- YAML / `.properties` config with `${ENV}` expansion
+- `Prop` validation after successful decode
+- `Once` / `OnceValue` / `Container` singletons (thread-safe)
+- `Lifecycle` with ordered `Start` / `Stop` and signal-aware `RunWithSignals`
+- Legacy compatibility: `IProcess`, `GetInstance(string)` (deprecated)
 
-1. Register your processes:
-    
+## Recipes by use case
+
+### Config only
+
+Load and validate properties — no background processes.
+
+See [examples/standalone](examples/standalone).
+
 ```go
-initModules.RegisterProcess(instance.GetTestInstance())
+if err := initModules.LoadProperties(
+    initModules.WithFilePath("config.yml"),
+    initModules.WithFormat(initModules.YML),
+); err != nil {
+    log.Fatal(err)
+}
 ```
 
-The RunProcesses function is called automatically if enableLoadProcesses is set to true during the call to Run.
+### Config + database
 
-### Contributions
-Contributions are welcome.
+Register a `Lifecycle` that pings on start and closes the pool on stop.
+
+```go
+initModules.Register(lifecycleFunc{
+    start: func(ctx context.Context) error { return db.Ping(ctx) },
+    stop:  func(ctx context.Context) error { db.ClosePool(); return nil },
+})
+```
+
+Reference: `groowcity-cron` (Mongo), `base-golang` (Postgres).
+
+### Config + database + HTTP
+
+Register DB lifecycles, route registration, then an `http.Server` with `Shutdown` on stop.
+
+Reference: [`base-golang/internal/bootstrap`](https://github.com/WilsonSayago/initModules) (consumer in monorepo).
+
+Recommended layout:
+
+```text
+cmd/main.go              → bootstrap.Run(ctx)
+internal/bootstrap/      → composition root
+internal/infra/          → adapters implementing Lifecycle
+```
+
+### Config + message consumer
+
+Register a queue `Lifecycle` that cancels context and closes the client on stop.
+
+Reference: `groowcity-cron`, `rabbitmq-golang`.
+
+## API overview
+
+| Task | API |
+|------|-----|
+| Load config | `AddPropE`, `LoadProperties`, `NewConfigLoader` |
+| Singleton | `OnceValue`, `Once`, `OnceIn` |
+| Graceful run | `Register`, `RunWithSignals`, `RunContext` |
+| Legacy | `Run`, `RegisterProcess`, `GetInstance` (deprecated) |
+
+## Documentation
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — library vs microservice responsibilities
+- [docs/MIGRATION.md](docs/MIGRATION.md) — v1.x upgrades and v2 preview
+- [ROADMAP.md](ROADMAP.md) — evolution plan
+- [CHANGELOG.md](CHANGELOG.md) — release notes
+- [docs/INVENTORY.md](docs/INVENTORY.md) — known consumers
+
+## Development
+
+```sh
+make test    # go test -race -cover
+make vet     # go vet ./...
+make lint    # golangci-lint (install: https://golangci-lint.run/welcome/install/)
+make ci      # vet + test + lint
+```
+
+CI runs on every push/PR: `go vet`, `go test -race -cover`, `golangci-lint`.
+
+## Migration
+
+Deprecated APIs remain in v1.x for compatibility. New services should use `LoadProperties`, `Once`/`OnceValue`, `Lifecycle`, and a local `internal/bootstrap` package.
+
+See [docs/MIGRATION.md](docs/MIGRATION.md) for step-by-step upgrades and the planned v2 breaking changes.
+
+## License
+
+See repository license (if applicable).
+
+## Contributing
+
+Issues and PRs welcome. Run `make ci` before submitting.

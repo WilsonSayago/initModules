@@ -11,8 +11,15 @@ type IProcess interface {
 
 var processes = make([]IProcess, 0)
 
+// RegisterProcess registers a legacy IProcess on the global app as a ProcessAdapter.
+//
+// Deprecated: implement Lifecycle and use Register instead.
 func RegisterProcess(p IProcess) {
+	if p == nil {
+		return
+	}
 	processes = append(processes, p)
+	Register(ProcessAdapter{Process: p})
 }
 
 func RunProcesses() {

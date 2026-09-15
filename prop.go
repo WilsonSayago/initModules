@@ -1,12 +1,7 @@
 package initModules
 
 import (
-	"github.com/magiconair/properties"
-	"gopkg.in/yaml.v3"
 	"log"
-	"os"
-	"path/filepath"
-	"reflect"
 )
 
 type PropType int
@@ -24,54 +19,27 @@ var propPath = "resources/properties.yml"
 var propType = YML
 var props = make([]interface{}, 0)
 
+// SetFilePath sets the global configuration file path and format.
+// Deprecated: prefer LoadProperties(initModules.WithFilePath(...), initModules.WithFormat(...)).
 func SetFilePath(pt PropType, p string) {
 	propType = pt
 	propPath = p
 }
 
+// AddProp registers a property on the global loader.
+// Deprecated: use AddPropE; handle the returned error in main instead of log.Fatal inside the library.
 func AddProp(p interface{}) {
-	if value := reflect.ValueOf(p); value.Kind() != reflect.Ptr || value.Elem().Kind() != reflect.Struct {
-		log.Fatal("The parameter must be a pointer or struct")
+	if err := AddPropE(p); err != nil {
+		log.Fatal(err)
 	}
-	
-	props = append(props, p)
 }
 
+// RunLoadProperties loads globally registered properties using global path and format settings.
+// Deprecated: use LoadProperties; handle errors in application main.
 func RunLoadProperties() {
 	log.Println("Started load properties from file: ", propPath)
-	
-	filename, err := filepath.Abs(propPath)
-	if err != nil {
-		log.Fatal("Error get absolute path: ", err)
+	if err := LoadProperties(); err != nil {
+		log.Fatal("Error load properties: ", err)
 	}
-	
-	var dataEnv string
-	var propEnv *properties.Properties
-	
-	if propType == YML {
-		dataFile, err := os.ReadFile(filename)
-		if err != nil {
-			log.Fatal("Error read file: ", err)
-		}
-		dataEnv = os.ExpandEnv(string(dataFile))
-	} else if propType == PROPERTIES {
-		propEnv = properties.MustLoadFile(filename, properties.UTF8)
-	}
-	
-	for _, p := range props {
-		if propType == YML {
-			err = yaml.Unmarshal([]byte(dataEnv), p)
-		} else if propType == PROPERTIES {
-			err = propEnv.Decode(p)
-		}
-		//reflect.TypeOf((*MyInterface)(nil)) returns a pointer to the interface, and Elem() is used to get the type of the interface.
-		if value := reflect.TypeOf(p); value.Implements(reflect.TypeOf((*Prop)(nil)).Elem()) {
-			p.(Prop).Validate()
-		}
-		if err != nil {
-			log.Fatal("Error unmarshal properties: ", err)
-		}
-	}
-	
 	log.Println("Finished load properties from file: ", propPath)
 }
