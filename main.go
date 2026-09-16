@@ -7,7 +7,7 @@ import (
 
 // Init loads properties and/or starts registered processes using the legacy goroutine model.
 //
-// Deprecated: use RunContext or RunWithSignals with Register(Lifecycle) instead.
+// Deprecated: use NewApp, Register, and RunWithSignals instead.
 func Init(enableLoadProp bool, enableLoadProcesses bool) {
 	if enableLoadProp {
 		RunLoadProperties()

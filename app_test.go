@@ -26,14 +26,16 @@ func newTestLifecycle() *testLifecycle {
 }
 
 func (t *testLifecycle) Start(ctx context.Context) error {
-	t.started.Add(1)
-	close(t.startedSignal)
+	if t.started.Add(1) == 1 {
+		close(t.startedSignal)
+	}
 	return nil
 }
 
 func (t *testLifecycle) Stop(ctx context.Context) error {
-	t.stopped.Add(1)
-	close(t.stoppedSignal)
+	if t.stopped.Add(1) == 1 {
+		close(t.stoppedSignal)
+	}
 	return nil
 }
 
@@ -338,5 +340,253 @@ func waitForSignal(t *testing.T, signal <-chan struct{}, operation string) {
 	case <-signal:
 	case <-time.After(2 * time.Second):
 		t.Fatalf("timeout waiting for %s", operation)
+	}
+}
+
+func TestApp_NewAppIsIsolatedFromGlobal(t *testing.T) {
+	ResetApp()
+	t.Cleanup(ResetApp)
+
+	globalLC := newTestLifecycle()
+	Register(globalLC)
+
+	app := NewApp()
+	localLC := newTestLifecycle()
+	app.Register(localLC)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if err := app.RunContext(ctx, RunOptions{RunLifecycles: true, StopTimeout: time.Second}); err != nil {
+		t.Fatalf("App.RunContext: %v", err)
+	}
+
+	if localLC.started.Load() != 1 || localLC.stopped.Load() != 1 {
+		t.Fatal("instance lifecycle was not run")
+	}
+	if globalLC.started.Load() != 0 {
+		t.Fatal("global lifecycle must not start on a distinct App")
+	}
+}
+
+func TestApp_IsolatedParallelRuns(t *testing.T) {
+	a1 := NewApp()
+	a2 := NewApp()
+	lc1 := newTestLifecycle()
+	lc2 := newTestLifecycle()
+	a1.Register(lc1)
+	a2.Register(lc2)
+
+	ctx1, cancel1 := context.WithCancel(context.Background())
+	ctx2, cancel2 := context.WithCancel(context.Background())
+	err1 := make(chan error, 1)
+	err2 := make(chan error, 1)
+
+	go func() {
+		err1 <- a1.RunContext(ctx1, RunOptions{RunLifecycles: true, StopTimeout: time.Second})
+	}()
+	go func() {
+		err2 <- a2.RunContext(ctx2, RunOptions{RunLifecycles: true, StopTimeout: time.Second})
+	}()
+
+	waitForSignal(t, lc1.startedSignal, "app1 Start")
+	waitForSignal(t, lc2.startedSignal, "app2 Start")
+	if lc1.stopped.Load() != 0 || lc2.stopped.Load() != 0 {
+		t.Fatal("neither app should have stopped before cancel")
+	}
+
+	cancel1()
+	cancel2()
+
+	for i, errCh := range []chan error{err1, err2} {
+		select {
+		case err := <-errCh:
+			if err != nil {
+				t.Fatalf("app %d: %v", i+1, err)
+			}
+		case <-time.After(3 * time.Second):
+			t.Fatalf("timeout waiting for app %d", i+1)
+		}
+	}
+	if lc1.stopped.Load() != 1 || lc2.stopped.Load() != 1 {
+		t.Fatal("expected each app to stop only its own lifecycle")
+	}
+}
+
+func TestApp_ConcurrentRegister(t *testing.T) {
+	app := NewApp()
+	const n = 50
+	lifecycles := make([]*scriptedLifecycle, n)
+	var wg sync.WaitGroup
+	for i := 0; i < n; i++ {
+		lc := &scriptedLifecycle{}
+		lifecycles[i] = lc
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			app.Register(lc)
+		}()
+	}
+	wg.Wait()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if err := app.RunContext(ctx, RunOptions{RunLifecycles: true, StopTimeout: time.Second}); err != nil {
+		t.Fatalf("App.RunContext: %v", err)
+	}
+	for i, lc := range lifecycles {
+		if lc.started.Load() != 1 {
+			t.Fatalf("lifecycle %d starts = %d, want 1", i, lc.started.Load())
+		}
+	}
+}
+
+func TestApp_RejectsConcurrentRun(t *testing.T) {
+	app := NewApp()
+	lc := newTestLifecycle()
+	app.Register(lc)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- app.RunContext(ctx, RunOptions{RunLifecycles: true, StopTimeout: time.Second})
+	}()
+	waitForSignal(t, lc.startedSignal, "Start")
+
+	err := app.RunContext(ctx, RunOptions{RunLifecycles: true, StopTimeout: time.Second})
+	if !errors.Is(err, ErrAppRunning) {
+		t.Fatalf("second run error = %v, want ErrAppRunning", err)
+	}
+
+	cancel()
+	select {
+	case err := <-errCh:
+		if err != nil {
+			t.Fatalf("first run: %v", err)
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("timeout waiting for first run")
+	}
+}
+
+func TestApp_NilContextDoesNotPanic(t *testing.T) {
+	app := NewApp()
+	app.Register(&failingLifecycle{})
+
+	var recovered any
+	func() {
+		defer func() { recovered = recover() }()
+		err := app.RunContext(nil, RunOptions{RunLifecycles: true, StopTimeout: time.Second})
+		if err == nil {
+			t.Fatal("expected start error")
+		}
+		if err := app.RunWithSignals(nil, RunOptions{RunLifecycles: true, StopTimeout: time.Second}); err == nil {
+			t.Fatal("expected start error from RunWithSignals")
+		}
+	}()
+	if recovered != nil {
+		t.Fatalf("panic: %v", recovered)
+	}
+}
+
+func TestApp_RegisterNilAndTypedNil(t *testing.T) {
+	app := NewApp()
+	app.Register(nil)
+	var typed Lifecycle = (*testLifecycle)(nil)
+	app.Register(typed)
+
+	keep := &scriptedLifecycle{name: "keep"}
+	app.Register(keep)
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if err := app.RunContext(ctx, RunOptions{RunLifecycles: true, StopTimeout: time.Second}); err != nil {
+		t.Fatalf("App.RunContext: %v", err)
+	}
+	if keep.started.Load() != 1 {
+		t.Fatal("expected only the non-nil lifecycle to start")
+	}
+}
+
+func TestApp_RegisterDuringRunAppliesToNextRun(t *testing.T) {
+	app := NewApp()
+	first := newTestLifecycle()
+	second := &scriptedLifecycle{name: "late"}
+	app.Register(first)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- app.RunContext(ctx, RunOptions{RunLifecycles: true, StopTimeout: time.Second})
+	}()
+	waitForSignal(t, first.startedSignal, "Start")
+	app.Register(second)
+	if second.started.Load() != 0 {
+		t.Fatal("lifecycle registered mid-run must not start")
+	}
+	cancel()
+	select {
+	case err := <-errCh:
+		if err != nil {
+			t.Fatalf("first run: %v", err)
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("timeout waiting for first run")
+	}
+
+	ctx2, cancel2 := context.WithCancel(context.Background())
+	cancel2()
+	if err := app.RunContext(ctx2, RunOptions{RunLifecycles: true, StopTimeout: time.Second}); err != nil {
+		t.Fatalf("second run: %v", err)
+	}
+	if second.started.Load() != 1 {
+		t.Fatal("lifecycle registered mid-run must start on the next run")
+	}
+}
+
+func TestApp_RunContextMatchesGlobalErrorSemantics(t *testing.T) {
+	app := NewApp()
+	var operations operationLog
+	startErr := errors.New("start C")
+	stopAErr := errors.New("stop A")
+	stopBErr := errors.New("stop B")
+	a := &scriptedLifecycle{name: "A", log: &operations, stopErr: stopAErr}
+	b := &scriptedLifecycle{name: "B", log: &operations, stopErr: stopBErr}
+	c := &scriptedLifecycle{name: "C", log: &operations, startErr: startErr}
+	app.Register(a)
+	app.Register(b)
+	app.Register(c)
+
+	err := app.RunContext(context.Background(), RunOptions{RunLifecycles: true, StopTimeout: time.Second})
+	for _, wantErr := range []error{startErr, stopAErr, stopBErr} {
+		if !errors.Is(err, wantErr) {
+			t.Errorf("App.RunContext error = %v, want errors.Is(_, %v)", err, wantErr)
+		}
+	}
+}
+
+func TestRunWithSignals_CancelParent(t *testing.T) {
+	ResetApp()
+	t.Cleanup(ResetApp)
+
+	lc := newTestLifecycle()
+	Register(lc)
+	ctx, cancel := context.WithCancel(context.Background())
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- RunWithSignals(ctx, RunOptions{RunLifecycles: true, StopTimeout: time.Second})
+	}()
+	waitForSignal(t, lc.startedSignal, "Start")
+	cancel()
+
+	select {
+	case err := <-errCh:
+		if err != nil {
+			t.Fatalf("RunWithSignals: %v", err)
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("timeout waiting for RunWithSignals")
+	}
+	if lc.stopped.Load() != 1 {
+		t.Fatal("expected Stop to be called")
 	}
 }
