@@ -2,7 +2,6 @@ package initModules
 
 import (
 	"log"
-	"reflect"
 )
 
 type IProcess interface {
@@ -11,13 +10,27 @@ type IProcess interface {
 
 var processes = make([]IProcess, 0)
 
+// RegisterProcess registers a legacy IProcess on the global app as a ProcessAdapter.
+//
+// Deprecated: implement Lifecycle and use Register instead.
 func RegisterProcess(p IProcess) {
+	if isNilValue(p) {
+		return
+	}
 	processes = append(processes, p)
+	Register(ProcessAdapter{Process: p})
 }
 
+// RunProcesses starts registered IProcess values in goroutines.
+//
+// Deprecated: implement Lifecycle and use NewApp with RunWithSignals instead.
 func RunProcesses() {
 	for _, p := range processes {
-		log.Println("Start processes: ", reflect.TypeOf(p).Elem().Name())
+		if isNilValue(p) {
+			log.Println("Start processes: skip nil IProcess")
+			continue
+		}
+		log.Println("Start processes: ", typeName(p))
 		go p.Start()
 	}
 }
