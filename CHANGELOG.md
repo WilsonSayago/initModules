@@ -13,11 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `WithStrictYAML` — opt-in unknown-field rejection for a single YAML target.
 - `WithStrictEnv` — opt-in `${NAME}` expansion that errors on unset variables and maps `$$` to `$`.
 - atomic config load: decode and validate independent copies of current values, then commit only if every target succeeds. Omitted fields keep constructor defaults; pre-existing maps, slices, and pointers are not mutated on failure.
+- `NewApp`, `(*App).RunContext`, `(*App).RunWithSignals`, and `ErrAppRunning` for isolated, concurrent-safe app runs.
 
 ### Changed
 
 - Invalid options, empty target lists, typed-nil targets, and unsupported formats are rejected before reading the file.
 - Shutdown-unrelated config errors wrap the operation and filename without embedding env values or file contents.
+- Package-level `Register`, `RunContext`, and `RunWithSignals` delegate to a shared default `App`; registrations during a run apply only to the next run.
 
 ### Deprecated
 

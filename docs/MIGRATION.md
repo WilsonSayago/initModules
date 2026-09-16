@@ -53,13 +53,16 @@ initModules.Init(true, true)
 r.Run() // HTTP outside initModules
 
 // After
-initModules.Register(dbLifecycle)
-initModules.Register(httpServer)
-initModules.RunWithSignals(ctx, initModules.RunOptions{
+app := initModules.NewApp()
+app.Register(dbLifecycle)
+app.Register(httpServer)
+if err := app.RunWithSignals(ctx, initModules.RunOptions{
     LoadProperties: false,
     RunLifecycles:  true,
-})
+}); err != nil { log.Fatal(err) }
 ```
+
+Package-level `Register`, `RunContext`, and `RunWithSignals` remain in v1 and operate on a shared default `App`. New services should use `NewApp`. Those globals are planned for deprecation in v2.
 
 ---
 
@@ -73,6 +76,7 @@ The following will be **removed** in v2:
 | `SetFilePath`, `AddProp`, `RunLoadProperties` | `LoadProperties(opts…)` only |
 | `Prop` (`Validate()`) | `PropValidator` (`Validate() error`) |
 | `IProcess` + `RegisterProcess` | `Lifecycle` only |
+| package-level `Register`, `RunContext`, `RunWithSignals` | `NewApp()` and instance methods |
 | `log.Fatal` inside library | Always return `error` to `main` |
 
 Before upgrading to v2:

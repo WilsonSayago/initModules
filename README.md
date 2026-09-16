@@ -34,9 +34,10 @@ func main() {
         log.Fatal(err)
     }
 
-    initModules.Register(myService)
+    app := initModules.NewApp()
+    app.Register(myService)
 
-    if err := initModules.RunWithSignals(context.Background(), initModules.RunOptions{
+    if err := app.RunWithSignals(context.Background(), initModules.RunOptions{
         LoadProperties: false,
         RunLifecycles:  true,
     }); err != nil {
@@ -66,8 +67,9 @@ In a **go.work** monorepo, add `use ./initModules` and depend on the local modul
 - Optional strict YAML (`WithStrictYAML`) and strict env (`WithStrictEnv`)
 - Atomic config load: targets are not mutated unless decode and validation succeed for all of them
 - `Once` / `OnceValue` / `Container` singletons (thread-safe)
+- Isolated `App` composition root (`NewApp`, `(*App).RunContext`, `(*App).RunWithSignals`)
 - `Lifecycle` with ordered `Start` / `Stop` and signal-aware `RunWithSignals`
-- Legacy compatibility: `IProcess`, `GetInstance(string)` (deprecated)
+- Legacy compatibility: package-level `Register` / `RunContext`, `IProcess`, `GetInstance(string)` (deprecated)
 
 ## Recipes by use case
 
@@ -97,7 +99,8 @@ Strict YAML accepts a single target; group sections in one root struct. Strict e
 Register a `Lifecycle` that pings on start and closes the pool on stop.
 
 ```go
-initModules.Register(lifecycleFunc{
+app := initModules.NewApp()
+app.Register(lifecycleFunc{
     start: func(ctx context.Context) error { return db.Ping(ctx) },
     stop:  func(ctx context.Context) error { db.ClosePool(); return nil },
 })
@@ -131,8 +134,8 @@ Reference: `groowcity-cron`, `rabbitmq-golang`.
 |------|-----|
 | Load config | `AddPropE`, `LoadProperties`, `NewConfigLoader`, `PropValidator` |
 | Singleton | `OnceValue`, `Once`, `OnceIn` |
-| Graceful run | `Register`, `RunWithSignals`, `RunContext` |
-| Legacy | `Run`, `RegisterProcess`, `GetInstance` (deprecated) |
+| Graceful run | `NewApp`, `(*App).Register`, `(*App).RunWithSignals`, `(*App).RunContext` |
+| Legacy | package-level `Register` / `RunContext`, `Run`, `RegisterProcess`, `GetInstance` (deprecated) |
 
 ## Documentation
 
@@ -158,9 +161,11 @@ CI runs the same formatting, repeated test, race/coverage, vet, nested-module, a
 
 ## Migration
 
-Deprecated APIs remain in v1.x for compatibility. New services should use `LoadProperties`, `Once`/`OnceValue`, `Lifecycle`, and a local `internal/bootstrap` package.
+Deprecated APIs remain in v1.x for compatibility. New services should use `LoadProperties`, `Once`/`OnceValue`, `NewApp` with `Lifecycle`, and a local `internal/bootstrap` package.
 
 See [docs/MIGRATION.md](docs/MIGRATION.md) for step-by-step upgrades and the planned v2 breaking changes.
+
+Package-level `Register`, `RunContext`, and `RunWithSignals` still target a shared default `App` in v1. Prefer `NewApp()` so tests and processes can isolate lifecycles. `ResetApp` is for tests only and must not run during an active global run.
 
 ## License
 

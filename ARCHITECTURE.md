@@ -9,8 +9,8 @@
 | Config load | `LoadProperties`, `ConfigLoader`, `AddPropE` | YAML / `.properties`, `${ENV}` expansion |
 | Validation hook | `Prop` interface | Called after successful decode |
 | Singletons | `Once`, `OnceValue`, `OnceIn` | Prefer over string-key `GetInstance` |
-| Lifecycle | `Lifecycle`, `Register`, `RunContext`, `RunWithSignals` | Ordered start / reverse stop |
-| Legacy bridge | `IProcess`, `ProcessAdapter`, `RegisterProcess` | Deprecated path |
+| Lifecycle | `App`, `NewApp`, `Lifecycle`, `(*App).RunContext`, `(*App).RunWithSignals` | Ordered start / reverse stop; isolated per App |
+| Legacy bridge | package-level `Register` / `RunContext`, `IProcess`, `ProcessAdapter` | Shared default App; deprecated path |
 
 ## What belongs in each microservice
 
@@ -29,8 +29,9 @@ cmd/main.go
     └── bootstrap.Run(ctx)
             ├── LoadConfig()          → initModules.LoadProperties
             ├── migrations / setup    → service-specific
-            ├── Register(lifecycle…)  → DB, queue, HTTP, …
-            └── RunWithSignals        → block → graceful Stop
+            ├── app := NewApp()
+            ├── app.Register(lifecycle…)  → DB, queue, HTTP, …
+            └── app.RunWithSignals        → block → graceful Stop
 ```
 
 ## Dependency direction
@@ -42,6 +43,8 @@ cmd/main.go
 ```
 
 Domain packages should **not** import `initModules`. Only `cmd`, `bootstrap`, and infrastructure wiring layers may import it.
+
+`App` is a **lightweight composition root**: it stores an ordered list of `Lifecycle` values and runs start/stop. It does not construct or look up dependencies; each service still wires databases, clients, and config in `internal/bootstrap` and then registers the resulting components.
 
 ## Versioning
 
