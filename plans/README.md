@@ -21,6 +21,7 @@ leer el plan completo, respetar sus condiciones de parada y actualizar su fila.
 | 005 | Endurecer contenedores y adaptadores heredados | P2 | M | 001, 004 | DONE |
 | 006 | Actualizar Go, dependencias y supply chain de CI | P1 | L | 001–005 | DONE |
 | 007 | Preparar una release v1 verificable | P1 | M | 001–006 | BLOCKED (licencia; sin tag/push) |
+| 008 | Organizar archivos sin alterar la API pública | P3 | S | 001–006 | DONE |
 
 Valores: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED (<razón>)` o
 `REJECTED (<razón>)`.
@@ -73,6 +74,10 @@ Valores: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED (<razón>)` o
   contra `v1.0.6` sin cambios incompatibles; candidato `v1.6.0`. Falta elección
   explícita de licencia y autorización de tag/push. El árbol conserva archivos
   de planes del propietario sin confirmar.
+- **Plan 008 — verificado 2026-09-16**: `main.go` → `legacy_run.go`; tests de
+  config divididos por dominio; `ARCHITECTURE.md`/`ROADMAP.md` en `docs/`;
+  inventario archivado en `docs/history/inventory-2026-05-26.md`. Pasan
+  formato, vet, suite repetida, race, ejemplo y `git diff --check`.
 
 ## Dependencias
 
@@ -86,6 +91,9 @@ Valores: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED (<razón>)` o
   de fallos de toolchain o dependencias.
 - 007 sólo puede declarar una versión cuando todos los gates anteriores pasan y
   la historia/documentación coincide con artefactos publicables.
+- 008 es independiente de la decisión legal del 007 y puede ejecutarse mientras
+  la release está bloqueada; antes del tag, 007 debe revisar las rutas de
+  documentación resultantes.
 
 ## Hallazgos considerados y descartados
 

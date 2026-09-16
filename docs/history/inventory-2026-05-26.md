@@ -1,5 +1,9 @@
 # initModules — Inventario (Fase 0)
 
+> **Snapshot histórico (2026-05-26).** Este documento no es la fuente canónica
+> actual: no refleja la política de Go (`go 1.24.0` / `toolchain go1.27.1`) ni
+> el estado vigente de los consumidores. Se conserva como evidencia de la Fase 0.
+
 **Fecha:** 2026-05-26  
 **Versión lib en repo local:** módulo `github.com/WilsonSayago/initModules` (sin tag en workspace; consumidores pinnean `v1.0.6`)  
 **Go:** `initModules` → `1.26.3`; `go.work` → `1.26.3`

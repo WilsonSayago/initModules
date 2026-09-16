@@ -32,7 +32,7 @@ Objetivo: seguir usando `github.com/WilsonSayago/initModules` como librería com
 
 **Objetivo:** saber desde dónde partimos antes de tocar código.
 
-**Completada:** 2026-05-26 — detalle en [docs/INVENTORY.md](docs/INVENTORY.md).
+**Completada:** 2026-05-26 — detalle en [history/inventory-2026-05-26.md](history/inventory-2026-05-26.md).
 
 ### Tareas
 
@@ -47,7 +47,7 @@ Objetivo: seguir usando `github.com/WilsonSayago/initModules` como librería com
 
 ### Criterios de aceptación
 
-- [x] Tabla de usos actualizada en este doc (sección [Inventario](#inventario)) y en `docs/INVENTORY.md`.
+- [x] Tabla de usos actualizada en este doc (sección [Inventario](#inventario)) y en [history/inventory-2026-05-26.md](history/inventory-2026-05-26.md).
 - [x] `go test ./initModules/...` ejecutable en CI (sin tests aún; `[no test files]`).
 
 ### Revisión
@@ -61,7 +61,7 @@ Objetivo: seguir usando `github.com/WilsonSayago/initModules` como librería com
 
 **Objetivo:** corregir bugs y races sin cambiar el flujo de los consumidores.
 
-**Completada:** 2026-05-26 — ver [CHANGELOG.md](CHANGELOG.md).
+**Completada:** 2026-05-26 — ver [CHANGELOG.md](../CHANGELOG.md).
 
 ### 1.1 Thread-safety en `GetInstance(string, ...)`
 
@@ -100,7 +100,7 @@ Objetivo: seguir usando `github.com/WilsonSayago/initModules` como librería com
 
 **Objetivo:** dejar de usar `log.Fatal` dentro de la librería; el `main` decide si abortar.
 
-**Completada:** 2026-05-26 — ver [CHANGELOG.md](CHANGELOG.md).
+**Completada:** 2026-05-26 — ver [CHANGELOG.md](../CHANGELOG.md).
 
 ### 2.1 Nuevas funciones (mantener las viejas como wrappers)
 
@@ -130,7 +130,7 @@ Objetivo: seguir usando `github.com/WilsonSayago/initModules` como librería com
 
 **Objetivo:** un solo patrón para “una instancia por app”, manteniendo compatibilidad.
 
-**Completada:** 2026-05-26 — ver [CHANGELOG.md](CHANGELOG.md).
+**Completada:** 2026-05-26 — ver [CHANGELOG.md](../CHANGELOG.md).
 
 ### 3.1 Endurecer `BaseInstance[T]`
 
@@ -164,7 +164,7 @@ Objetivo: seguir usando `github.com/WilsonSayago/initModules` como librería com
 
 **Objetivo:** reemplazar `go Start()` + `os.Exit(0)` por arranque/parada ordenados.
 
-**Completada:** 2026-05-26 — ver [CHANGELOG.md](CHANGELOG.md).
+**Completada:** 2026-05-26 — ver [CHANGELOG.md](../CHANGELOG.md).
 
 ### 4.1 Nueva interfaz (convivir con `IProcess`)
 
@@ -241,7 +241,7 @@ Objetivo: seguir usando `github.com/WilsonSayago/initModules` como librería com
 
 Todo el trabajo de las fases 1–6 está en esta rama. No hay tags `v1.1.0`–`v1.6.0`.
 La publicación está bloqueada por licencia y por autorización explícita de tag;
-ver [docs/RELEASE.md](docs/RELEASE.md).
+ver [RELEASE.md](RELEASE.md).
 
 ## Futuro
 
@@ -263,7 +263,7 @@ Pendiente de decisión del propietario (licencia + autorización de tag/push).
 
 ---
 
-## Inventario (Fase 0 — ver [docs/INVENTORY.md](docs/INVENTORY.md))
+## Inventario (Fase 0 — ver [history/inventory-2026-05-26.md](history/inventory-2026-05-26.md))
 
 | Servicio | Versión initModules | main | GetInstance (archivos) | BaseInstance | RegisterProcess / Run |
 |----------|---------------------|------|------------------------|--------------|------------------------|

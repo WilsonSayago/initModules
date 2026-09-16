@@ -5,7 +5,7 @@
 GOLANGCI_LINT_VERSION := v2.13.2
 GOVULNCHECK_VERSION := v1.8.0
 
-FORMAT_FILES := main.go prop_test.go once_test.go initinstance_test.go app_test.go
+FORMAT_FILES := legacy_run.go once_test.go initinstance_test.go app_test.go config_loader_test.go config_atomic_test.go config_strict_test.go config_options_test.go config_test_helpers_test.go
 
 fmt:
 	gofmt -w $(FORMAT_FILES)

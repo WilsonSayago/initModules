@@ -45,6 +45,7 @@ compatible additions only, no removed or signature-incompatible exports.
 - `Run` uses `RunWithSignals` and no longer calls `os.Exit` (it still `log.Fatal`s on error for v1 compatibility).
 - `RegisterProcess` also registers a `ProcessAdapter` on the global app.
 - `SIGKILL` is not registered with `signal.Notify` (not catchable).
+- Repository layout: legacy wrappers live in `legacy_run.go`, config tests are split by domain, and design docs live under `docs/` (historical inventory in `docs/history/`).
 
 ### Deprecated
 

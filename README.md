@@ -143,11 +143,11 @@ Reference: `groowcity-cron`, `rabbitmq-golang`.
 
 ## Documentation
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) — library vs microservice responsibilities
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — library vs microservice responsibilities
 - [docs/MIGRATION.md](docs/MIGRATION.md) — v1.x upgrades and v2 preview
-- [ROADMAP.md](ROADMAP.md) — evolution plan
+- [docs/ROADMAP.md](docs/ROADMAP.md) — evolution plan
 - [CHANGELOG.md](CHANGELOG.md) — release notes
-- [docs/INVENTORY.md](docs/INVENTORY.md) — known consumers
+- [docs/history/inventory-2026-05-26.md](docs/history/inventory-2026-05-26.md) — historical consumer inventory (2026-05-26 snapshot)
 - [docs/RELEASE.md](docs/RELEASE.md) — publication checklist (no tag until authorized)
 
 ## Development

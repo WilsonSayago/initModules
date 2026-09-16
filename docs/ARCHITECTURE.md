@@ -49,11 +49,11 @@ Domain packages should **not** import `initModules`. Only `cmd`, `bootstrap`, an
 ## Versioning
 
 - **v1.x** — additive changes; deprecated APIs retained (`GetInstance(string)`, `SetFilePath`, `IProcess`). Last published tag: `v1.0.6`. Proposed next tag: `v1.6.0`.
-- **v2** (planned) — module path `github.com/WilsonSayago/initModules/v2`; remove deprecated globals and `log.Fatal` wrappers; see [docs/MIGRATION.md](docs/MIGRATION.md).
+- **v2** (planned) — module path `github.com/WilsonSayago/initModules/v2`; remove deprecated globals and `log.Fatal` wrappers; see [MIGRATION.md](MIGRATION.md).
 
 ## Related docs
 
-- [README.md](README.md) — usage and quickstart
+- [README.md](../README.md) — usage and quickstart
 - [ROADMAP.md](ROADMAP.md) — evolution plan
-- [docs/INVENTORY.md](docs/INVENTORY.md) — consumer inventory
-- [examples/standalone](examples/standalone) — minimal config-only app
+- [history/inventory-2026-05-26.md](history/inventory-2026-05-26.md) — historical consumer inventory (2026-05-26 snapshot)
+- [examples/standalone](../examples/standalone) — minimal config-only app
