@@ -8,9 +8,12 @@ import (
 type singletonData struct {
 	once     sync.Once
 	instance interface{}
+	fail     any
 }
 
 var globalSingletons sync.Map // reflect.Type -> *singletonData
+
+const errNilInstanceMsg = "initModules: constructor returned nil; Once requires a non-nil *T"
 
 // Once returns a singleton *T where T is a struct type. The constructor must return *T.
 func Once[T any](constructor func() *T) *T {
@@ -38,12 +41,21 @@ func onceWithRegistry[T any](registry *sync.Map, constructor func() *T) *T {
 	data := val.(*singletonData)
 
 	data.once.Do(func() {
+		defer func() {
+			if rec := recover(); rec != nil {
+				data.fail = rec
+			}
+		}()
 		inst := constructor()
 		if inst == nil {
-			panic("initModules: constructor returned nil; Once requires a non-nil *T")
+			data.fail = errNilInstanceMsg
+			return
 		}
 		data.instance = inst
 	})
+	if data.fail != nil {
+		panic(data.fail)
+	}
 
 	return data.instance.(*T)
 }

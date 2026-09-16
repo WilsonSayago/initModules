@@ -54,6 +54,15 @@ Valores: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED (<razón>)` o
   verificaron apps aisladas en paralelo, registro concurrente, rechazo de un
   segundo run, contextos nil, typed nil y snapshot de registros durante un run.
   `ResetApp` permanece explícitamente restringido a tests fuera de un run global.
+- **Plan 005 — revisión 2026-09-16 en `f8921d1`: REVISE**. Pasan pruebas
+  enfocadas repetidas, suite, race, vet, formato, documentación y diff; el
+  alcance es correcto. Bloquea aprobación que un constructor que devuelve nil
+  hace panic dentro de `sync.Once`: la entrada queda consumida y una segunda
+  llamada termina en una aserción de tipo sobre nil, no en el error accionable
+  prometido. Falta prueba y manejo explícito del estado fallido.
+- **Plan 005 — corregido**: el panic de instancia nil ya no ocurre dentro de
+  `sync.Once`; el fallo se recuerda y la segunda llamada conserva el mensaje
+  accionable. Pasan pruebas enfocadas, suite, race, vet y formato.
 
 ## Dependencias
 

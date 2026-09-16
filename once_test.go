@@ -201,17 +201,53 @@ func TestOnce_NilConstructor(t *testing.T) {
 
 func TestOnceIn_ConstructorReturnsNil(t *testing.T) {
 	c := NewContainer()
+	ctor := func() *oncePointerStruct { return nil }
+	assertPanicString(t, func() { _ = OnceIn(c, ctor) }, "constructor returned nil")
+	assertPanicString(t, func() { _ = OnceIn(c, ctor) }, "constructor returned nil")
+}
+
+func TestOnce_ConstructorReturnsNil_SecondCallKeepsMessage(t *testing.T) {
+	resetGlobalSingletonsForTest(t)
+
+	var calls atomic.Int32
+	ctor := func() *oncePointerStruct {
+		calls.Add(1)
+		return nil
+	}
+	assertPanicString(t, func() { _ = Once(ctor) }, "constructor returned nil")
+	assertPanicString(t, func() { _ = Once(ctor) }, "constructor returned nil")
+	if calls.Load() != 1 {
+		t.Fatalf("constructor calls = %d, want 1", calls.Load())
+	}
+}
+
+func TestOnceIn_ConstructorPanic_SecondCallKeepsMessage(t *testing.T) {
+	c := NewContainer()
+	var calls atomic.Int32
+	ctor := func() *oncePointerStruct {
+		calls.Add(1)
+		panic("boom from ctor")
+	}
+	assertPanicString(t, func() { _ = OnceIn(c, ctor) }, "boom from ctor")
+	assertPanicString(t, func() { _ = OnceIn(c, ctor) }, "boom from ctor")
+	if calls.Load() != 1 {
+		t.Fatalf("constructor calls = %d, want 1", calls.Load())
+	}
+}
+
+func assertPanicString(t *testing.T, fn func(), substr string) {
+	t.Helper()
 	defer func() {
 		r := recover()
 		if r == nil {
-			t.Fatal("expected panic for nil instance")
+			t.Fatal("expected panic")
 		}
 		msg, ok := r.(string)
-		if !ok || !strings.Contains(msg, "constructor returned nil") {
-			t.Fatalf("panic = %v", r)
+		if !ok || !strings.Contains(msg, substr) {
+			t.Fatalf("panic = %#v, want substring %q", r, substr)
 		}
 	}()
-	_ = OnceIn(c, func() *oncePointerStruct { return nil })
+	fn()
 }
 
 func TestBaseInstance_BackwardCompatible(t *testing.T) {
