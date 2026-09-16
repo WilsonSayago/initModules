@@ -96,15 +96,20 @@ legacy y precedencia de la interfaz nueva.
 
 ### 2. Decodificar y validar sobre copias temporales
 
-Para cada target puntero-a-struct validado, crear con reflexión un puntero nuevo
-del mismo tipo. Decodificar y validar exclusivamente esas copias. Sólo cuando
-todos los targets hayan pasado, asignar cada struct temporal al destino original.
-La fase de commit no debe fallar. Esto garantiza rollback de valores; documentar
-que efectos externos causados por un `Validate` del consumidor no son reversibles.
+Para cada target puntero-a-struct validado, crear una copia temporal independiente
+del valor actual, no un struct inicializado en cero. La copia debe conservar
+defaults de constructor en campos ausentes del archivo y no debe compartir mapas,
+slices ni punteros mutables que el decoder pueda modificar antes del commit.
+Decodificar y validar exclusivamente esas copias. Sólo cuando todos los targets
+hayan pasado, asignar cada struct temporal al destino original. La fase de commit
+no debe fallar. Esto garantiza rollback de valores; documentar que efectos externos
+causados por un `Validate` del consumidor no son reversibles.
 
 **Verificar**: iniciar dos targets con valores conocidos; forzar fallo de decode
 y luego de validación en el segundo; ambos deben conservar exactamente sus
-valores originales.
+valores originales. Añadir un load exitoso con un campo omitido que conserva su
+default previo y casos de fallo con mapa, slice y puntero preinicializados que no
+mutan a través de aliasing.
 
 ### 3. Añadir modo YAML estricto
 
@@ -156,6 +161,8 @@ que la interfaz vieja desaparece en v1. Changelog debe dejar estas entradas en
 - Decode YAML y properties exitoso, con validación nueva y legacy.
 - Error de validación preservado con `errors.Is`.
 - Rollback total con fallo de decode o validación en cualquier target.
+- Load exitoso parcial conserva defaults preexistentes de campos ausentes.
+- Fallos no mutan mapas, slices ni valores apuntados preexistentes por aliasing.
 - YAML strict: typo rechazado, multi-target rechazado de forma explícita.
 - Env strict: presente, vacío, ausente, literal `$`, y no filtración de valor.
 - Target nil/tipado-nil, cero targets, option nil y formato inválido.
@@ -165,6 +172,8 @@ que la interfaz vieja desaparece en v1. Changelog debe dejar estas entradas en
 
 - [ ] Los consumidores pueden devolver errores de validación sin romper `Prop`.
 - [ ] Ningún target se modifica cuando cualquier fase falla.
+- [ ] Un load exitoso conserva los defaults preexistentes de campos no presentes
+  en YAML o `.properties`, igual que antes del cambio atómico.
 - [ ] Strict YAML y strict env son opt-in en v1 y están documentados.
 - [ ] Errores no exponen contenido de configuración ni valores de entorno.
 - [ ] suite repetida, race, vet, formato y ejemplo pasan.
@@ -185,4 +194,3 @@ que la interfaz vieja desaparece en v1. Changelog debe dejar estas entradas en
 Al revisar, buscar aliasing: sólo el valor del struct se copia; mapas, slices o
 punteros anidados decodificados deben ser nuevos para evitar mutación anticipada.
 En v2 se podrá hacer strict por defecto y eliminar `Prop` legacy.
-

@@ -174,3 +174,14 @@ Revisar mensualmente patch de Go y alertas Dependabot, pero elevar el directive
 `go` sólo cuando cambie el mínimo soportado. Renovar SHAs mediante PR revisable,
 nunca tags flotantes.
 
+## Corrección requerida tras revisión
+
+La revisión de `1afad81` detectó que la matriz no prueba realmente el mínimo:
+la selección predeterminada `GOTOOLCHAIN=auto` lee `toolchain go1.27.1` y cambia
+el proceso iniciado con Go 1.24.13 a Go 1.27.1. En el job `test`, establecer
+`GOTOOLCHAIN: local` para los comandos de formato, vet y pruebas (a nivel de job
+o de steps), de modo que cada fila use exactamente el binario instalado por
+`actions/setup-go`. Conservar el `toolchain` directive para consumidores que
+quieran la versión recomendada. Antes de marcar el plan como DONE, comprobar en
+la ejecución remota que `go version` reporta 1.24.13 y 1.27.1 respectivamente;
+añadir un step explícito de diagnóstico si el log no lo deja claro.

@@ -87,7 +87,9 @@ Once`). Aplicar igual a `OnceValueIn`. Validar constructor nil con mensaje claro
 no aceptar una instancia nil silenciosa si luego la aserción oculta la causa.
 
 **Verificar**: tests prueban panic/mensaje para container y constructor nil, y
-confirman que el registro global no fue tocado.
+confirman que el registro global no fue tocado. Si un constructor devuelve nil o
+hace panic dentro de `sync.Once`, una segunda llamada del mismo tipo debe seguir
+fallando con un mensaje accionable y nunca con una aserción de tipo sobre nil.
 
 ### 2. Detectar interfaces tipadas nil
 
@@ -120,7 +122,8 @@ legacy sólo se conserva para migración; recomendar `Lifecycle`. Changelog bajo
 ## Plan de pruebas
 
 - `OnceIn`/`OnceValueIn`: aislamiento normal, container nil, constructor nil,
-  resultado nil y global intacto.
+  resultado nil y global intacto; repetir la llamada después de un constructor
+  que devolvió nil para comprobar que `sync.Once` no degrada el error.
 - `ProcessAdapter`: proceso válido y tipado nil.
 - `RegisterProcess`/`RunProcesses`: implementación valor, puntero y tipado nil.
 - Suite con race para confirmar que guards no introducen acceso inseguro.
@@ -128,6 +131,8 @@ legacy sólo se conserva para migración; recomendar `Lifecycle`. Changelog bajo
 ## Criterios de término
 
 - [ ] `OnceIn(nil, ...)` nunca cae silenciosamente al global.
+- [ ] Una inicialización fallida no deja una entrada `sync.Once` que produzca un
+  panic de aserción de tipo en llamadas posteriores.
 - [ ] ningún `.Elem()` inseguro queda en el flujo legacy.
 - [ ] interfaces tipadas nil no causan goroutines con panic.
 - [ ] comportamiento legacy válido sigue funcionando y está deprecado.
@@ -145,4 +150,3 @@ legacy sólo se conserva para migración; recomendar `Lifecycle`. Changelog bajo
 
 En v2, eliminar `IProcess` y decidir si `OnceIn` devuelve error en vez de panic.
 El revisor debe verificar que el helper de nil no confunda valores cero válidos.
-
