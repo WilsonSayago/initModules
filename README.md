@@ -1,11 +1,11 @@
 # initModules
 
-[![Go](https://img.shields.io/badge/Go-1.26.3+-00ADD8?logo=go&logoColor=white)](https://go.dev/dl/)
+[![Go](https://img.shields.io/badge/Go-1.24+-00ADD8?logo=go&logoColor=white)](https://go.dev/dl/)
 [![CI](https://github.com/WilsonSayago/initModules/actions/workflows/ci.yml/badge.svg)](https://github.com/WilsonSayago/initModules/actions/workflows/ci.yml)
 
 Shared **bootstrap toolkit** for Go microservices: configuration loading, type-safe singletons, and graceful lifecycle (start/stop with context).
 
-> **Go:** requires **1.26.3+** (see `go.mod`).
+> **Go:** language minimum **1.24.0**; recommended toolchain **go1.27.1** (see `go.mod`). CI tests the latest Go 1.24 patch and current stable.
 
 ## Quickstart
 

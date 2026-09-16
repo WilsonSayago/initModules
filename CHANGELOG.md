@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Go language minimum is 1.24.0 with recommended toolchain go1.27.1 (verified 2026-09-16 on go.dev: go1.24.13 and go1.27.1).
+- `github.com/magiconair/properties` v1.18.11 (official consecutive release after v1.8.10; `Decode` API unchanged).
+- YAML remains `gopkg.in/yaml.v3` v3.0.1; yaml v4 is still release-candidate only.
 - Invalid options, empty target lists, typed-nil targets, and unsupported formats are rejected before reading the file.
 - Shutdown-unrelated config errors wrap the operation and filename without embedding env values or file contents.
 - Package-level `Register`, `RunContext`, and `RunWithSignals` delegate to a shared default `App`; registrations during a run apply only to the next run.
