@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Invalid options, empty target lists, typed-nil targets, and unsupported formats are rejected before reading the file.
 - Shutdown-unrelated config errors wrap the operation and filename without embedding env values or file contents.
 - Package-level `Register`, `RunContext`, and `RunWithSignals` delegate to a shared default `App`; registrations during a run apply only to the next run.
+- `OnceIn` / `OnceValueIn` panic on a nil `Container` instead of falling back to the global registry. Nil constructors and nil constructed instances also panic with an actionable message.
+- Legacy `IProcess` adapters skip typed-nil values, return an error from `ProcessAdapter.Start` when the process is nil, and name value or pointer implementations without panicking.
 
 ### Deprecated
 

@@ -69,7 +69,8 @@ In a **go.work** monorepo, add `use ./initModules` and depend on the local modul
 - `Once` / `OnceValue` / `Container` singletons (thread-safe)
 - Isolated `App` composition root (`NewApp`, `(*App).RunContext`, `(*App).RunWithSignals`)
 - `Lifecycle` with ordered `Start` / `Stop` and signal-aware `RunWithSignals`
-- Legacy compatibility: package-level `Register` / `RunContext`, `IProcess`, `GetInstance(string)` (deprecated)
+- Isolated singletons via `NewContainer()` + `OnceIn` / `OnceValueIn` (a nil Container panics; use `Once` for the global registry)
+- Legacy compatibility: package-level `Register` / `RunContext`, `IProcess`, `GetInstance(string)` (deprecated; prefer `Lifecycle`)
 
 ## Recipes by use case
 
@@ -133,7 +134,7 @@ Reference: `groowcity-cron`, `rabbitmq-golang`.
 | Task | API |
 |------|-----|
 | Load config | `AddPropE`, `LoadProperties`, `NewConfigLoader`, `PropValidator` |
-| Singleton | `OnceValue`, `Once`, `OnceIn` |
+| Singleton | `OnceValue`, `Once`, `NewContainer`, `OnceIn` |
 | Graceful run | `NewApp`, `(*App).Register`, `(*App).RunWithSignals`, `(*App).RunContext` |
 | Legacy | package-level `Register` / `RunContext`, `Run`, `RegisterProcess`, `GetInstance` (deprecated) |
 

@@ -64,6 +64,8 @@ if err := app.RunWithSignals(ctx, initModules.RunOptions{
 
 Package-level `Register`, `RunContext`, and `RunWithSignals` remain in v1 and operate on a shared default `App`. New services should use `NewApp`. Those globals are planned for deprecation in v2.
 
+`OnceIn` / `OnceValueIn` require a non-nil `NewContainer()`. Passing `nil` panics with a message to use `NewContainer` or the global `Once` APIs; it no longer falls back to the process-wide registry. Keep `IProcess` / `RegisterProcess` only while migrating; new components should implement `Lifecycle`.
+
 ---
 
 ## Preparing for v2.0 (planned)

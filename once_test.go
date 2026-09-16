@@ -1,6 +1,7 @@
 package initModules
 
 import (
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -114,6 +115,103 @@ func TestContainer_OnceIn_IsolatedFromGlobal(t *testing.T) {
 	if fromC1a == fromC2 {
 		t.Fatal("expected different pointers across containers")
 	}
+}
+
+func TestContainer_OnceIn_NilContainer(t *testing.T) {
+	resetGlobalSingletonsForTest(t)
+
+	var constructed atomic.Int32
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Fatal("expected panic for nil Container")
+		}
+		msg, ok := r.(string)
+		if !ok || !strings.Contains(msg, "nil Container") {
+			t.Fatalf("panic = %v", r)
+		}
+		if constructed.Load() != 0 {
+			t.Fatal("constructor must not run")
+		}
+		global := OnceValue(func() onceValueStructContainer {
+			constructed.Add(1)
+			return onceValueStructContainer{ID: 1}
+		})
+		if constructed.Load() != 1 || global.ID != 1 {
+			t.Fatalf("global registry was modified: count=%d id=%d", constructed.Load(), global.ID)
+		}
+	}()
+	_ = OnceIn[onceValueStructContainer](nil, func() *onceValueStructContainer {
+		constructed.Add(1)
+		return &onceValueStructContainer{ID: 99}
+	})
+}
+
+func TestContainer_OnceValueIn_NilContainer(t *testing.T) {
+	resetGlobalSingletonsForTest(t)
+
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Fatal("expected panic for nil Container")
+		}
+		msg, ok := r.(string)
+		if !ok || !strings.Contains(msg, "nil Container") {
+			t.Fatalf("panic = %v", r)
+		}
+		global := OnceValue(func() onceValueStructContainer { return onceValueStructContainer{ID: 1} })
+		if global.ID != 1 {
+			t.Fatalf("global registry was modified: %+v", global)
+		}
+	}()
+	_ = OnceValueIn[onceValueStructContainer](nil, func() onceValueStructContainer {
+		return onceValueStructContainer{ID: 99}
+	})
+}
+
+func TestOnceIn_NilConstructor(t *testing.T) {
+	c := NewContainer()
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Fatal("expected panic for nil constructor")
+		}
+		msg, ok := r.(string)
+		if !ok || !strings.Contains(msg, "nil constructor") {
+			t.Fatalf("panic = %v", r)
+		}
+	}()
+	_ = OnceIn[oncePointerStruct](c, nil)
+}
+
+func TestOnce_NilConstructor(t *testing.T) {
+	resetGlobalSingletonsForTest(t)
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Fatal("expected panic for nil constructor")
+		}
+		msg, ok := r.(string)
+		if !ok || !strings.Contains(msg, "nil constructor") {
+			t.Fatalf("panic = %v", r)
+		}
+	}()
+	_ = Once[oncePointerStruct](nil)
+}
+
+func TestOnceIn_ConstructorReturnsNil(t *testing.T) {
+	c := NewContainer()
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Fatal("expected panic for nil instance")
+		}
+		msg, ok := r.(string)
+		if !ok || !strings.Contains(msg, "constructor returned nil") {
+			t.Fatalf("panic = %v", r)
+		}
+	}()
+	_ = OnceIn(c, func() *oncePointerStruct { return nil })
 }
 
 func TestBaseInstance_BackwardCompatible(t *testing.T) {

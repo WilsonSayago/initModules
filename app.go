@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os/signal"
-	"reflect"
 	"sync"
 	"syscall"
 	"time"
@@ -159,27 +158,11 @@ func (a *App) stopAll(ctx context.Context, started []Lifecycle) error {
 }
 
 func lifecycleName(lc Lifecycle) string {
-	if lc == nil {
-		return "nil"
-	}
-	t := reflect.TypeOf(lc)
-	if t.Kind() == reflect.Ptr {
-		return t.Elem().Name()
-	}
-	return t.Name()
+	return typeName(lc)
 }
 
 func isNilLifecycle(l Lifecycle) bool {
-	if l == nil {
-		return true
-	}
-	v := reflect.ValueOf(l)
-	switch v.Kind() {
-	case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map, reflect.Chan, reflect.Func:
-		return v.IsNil()
-	default:
-		return false
-	}
+	return isNilValue(l)
 }
 
 // RunWithSignals is a helper that wraps ctx with OS shutdown signals and calls RunContext.

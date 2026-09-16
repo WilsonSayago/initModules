@@ -330,6 +330,21 @@ func TestProcessAdapter_StartsLegacyProcess(t *testing.T) {
 	}
 }
 
+func TestProcessAdapter_NilProcess(t *testing.T) {
+	t.Parallel()
+
+	err := ProcessAdapter{}.Start(context.Background())
+	if err == nil || !strings.Contains(err.Error(), "nil IProcess") {
+		t.Fatalf("error = %v, want nil IProcess", err)
+	}
+
+	var typed IProcess = (*pointerProcess)(nil)
+	err = ProcessAdapter{Process: typed}.Start(context.Background())
+	if err == nil || !strings.Contains(err.Error(), "nil IProcess") {
+		t.Fatalf("typed-nil error = %v, want nil IProcess", err)
+	}
+}
+
 type legacyProcessFunc func()
 
 func (f legacyProcessFunc) Start() { f() }

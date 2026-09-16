@@ -18,7 +18,7 @@ leer el plan completo, respetar sus condiciones de parada y actualizar su fila.
 | 002 | Propagar errores de apagado de lifecycles | P1 | M | 001 | DONE |
 | 003 | Hacer la carga de configuración validable, estricta y atómica | P1 | L | 001 | DONE |
 | 004 | Convertir `App` en una unidad realmente aislada | P1 | L | 002 | DONE |
-| 005 | Endurecer contenedores y adaptadores heredados | P2 | M | 001, 004 | TODO |
+| 005 | Endurecer contenedores y adaptadores heredados | P2 | M | 001, 004 | DONE |
 | 006 | Actualizar Go, dependencias y supply chain de CI | P1 | L | 001–005 | TODO |
 | 007 | Preparar una release v1 verificable | P1 | M | 001–006 | TODO |
 
@@ -48,6 +48,12 @@ Valores: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED (<razón>)` o
   profundidad; un campo omitido conserva su default y los fallos no mutan mapas,
   slices ni punteros preexistentes. Pasan tests config, 100 repeticiones de
   atomicidad/defaults/aliasing, suite repetida, race, vet, formato y ejemplo.
+- **Plan 004 — verificado 2026-09-16 en `ee5f4e9`**: alcance limitado a la
+  implementación, tests y documentación de `App`; pasan 30 y 100 repeticiones
+  de escenarios de instancia, suite repetida, race, vet, formato y diff. Se
+  verificaron apps aisladas en paralelo, registro concurrente, rechazo de un
+  segundo run, contextos nil, typed nil y snapshot de registros durante un run.
+  `ResetApp` permanece explícitamente restringido a tests fuera de un run global.
 
 ## Dependencias
 

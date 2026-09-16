@@ -1,6 +1,9 @@
 package initModules
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 // Lifecycle components support ordered startup and graceful shutdown.
 type Lifecycle interface {
@@ -17,6 +20,9 @@ type ProcessAdapter struct {
 }
 
 func (a ProcessAdapter) Start(ctx context.Context) error {
+	if isNilValue(a.Process) {
+		return fmt.Errorf("ProcessAdapter: nil IProcess")
+	}
 	go a.Process.Start()
 	return nil
 }

@@ -2,7 +2,6 @@ package initModules
 
 import (
 	"log"
-	"reflect"
 )
 
 type IProcess interface {
@@ -15,7 +14,7 @@ var processes = make([]IProcess, 0)
 //
 // Deprecated: implement Lifecycle and use Register instead.
 func RegisterProcess(p IProcess) {
-	if p == nil {
+	if isNilValue(p) {
 		return
 	}
 	processes = append(processes, p)
@@ -24,7 +23,11 @@ func RegisterProcess(p IProcess) {
 
 func RunProcesses() {
 	for _, p := range processes {
-		log.Println("Start processes: ", reflect.TypeOf(p).Elem().Name())
+		if isNilValue(p) {
+			log.Println("Start processes: skip nil IProcess")
+			continue
+		}
+		log.Println("Start processes: ", typeName(p))
 		go p.Start()
 	}
 }
