@@ -7,7 +7,7 @@
 | Concern | Package API | Notes |
 |---------|-------------|--------|
 | Config load | `LoadProperties`, `ConfigLoader`, `AddPropE` | YAML / `.properties`, `${ENV}` expansion |
-| Validation hook | `Prop` interface | Called after successful decode |
+| Validation hook | `PropValidator` (`Prop` remains in v1) | Called after successful decode |
 | Singletons | `Once`, `OnceValue`, `OnceIn` | Prefer over string-key `GetInstance` |
 | Lifecycle | `App`, `NewApp`, `Lifecycle`, `(*App).RunContext`, `(*App).RunWithSignals` | Ordered start / reverse stop; isolated per App |
 | Legacy bridge | package-level `Register` / `RunContext`, `IProcess`, `ProcessAdapter` | Shared default App; deprecated path |
@@ -48,8 +48,8 @@ Domain packages should **not** import `initModules`. Only `cmd`, `bootstrap`, an
 
 ## Versioning
 
-- **v1.x** — additive changes; deprecated APIs retained (`GetInstance(string)`, `SetFilePath`, `IProcess`).
-- **v2** (planned) — remove deprecated globals and `log.Fatal` wrappers; see [docs/MIGRATION.md](docs/MIGRATION.md).
+- **v1.x** — additive changes; deprecated APIs retained (`GetInstance(string)`, `SetFilePath`, `IProcess`). Last published tag: `v1.0.6`. Proposed next tag: `v1.6.0`.
+- **v2** (planned) — module path `github.com/WilsonSayago/initModules/v2`; remove deprecated globals and `log.Fatal` wrappers; see [docs/MIGRATION.md](docs/MIGRATION.md).
 
 ## Related docs
 

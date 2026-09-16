@@ -23,9 +23,8 @@ Objetivo: seguir usando `github.com/WilsonSayago/initModules` como librería com
 
 **Versionado sugerido:**
 
-- `v1.1.0` — fixes + API compatible (nuevas funciones que devuelven `error`)
-- `v1.2.0` — Container/Lifecycle opcionales, deprecaciones
-- `v2.0.0` — eliminar APIs deprecadas (`GetInstance` string, globals obligatorios)
+- `v1.6.0` — primer tag público después de `v1.0.6` (fases locales 1.1–1.6 nunca se etiquetaron).
+- `v2.0.0` — `module github.com/WilsonSayago/initModules/v2`; eliminar APIs deprecadas (`GetInstance` string, globals obligatorios).
 
 ---
 
@@ -44,7 +43,7 @@ Objetivo: seguir usando `github.com/WilsonSayago/initModules` como librería com
   - [x] `AddProp` / `RunLoadProperties` / `SetFilePath`
   - [x] `RegisterProcess` / `Init` / `Run`
 - [x] Documentar en un issue/ tabla: servicio → archivo `main` → procesos registrados.
-- [x] Confirmar Go mínimo de la lib (`go 1.26.x`) alineado con `go.work`.
+- [x] Confirmar Go mínimo de la lib (`go 1.24.0`, toolchain `go1.27.1`).
 
 ### Criterios de aceptación
 
@@ -233,10 +232,22 @@ Objetivo: seguir usando `github.com/WilsonSayago/initModules` como librería com
 
 ### Criterios de aceptación
 
-- [x] Badge / nota Go 1.26.3+ en README.
+- [x] Badge / nota Go 1.24+ (mínimo) y toolchain 1.27.1 en README.
 - [x] `examples/standalone` (config only).
 
 ---
+
+## Hecho (código en esta rama, tag pendiente)
+
+Todo el trabajo de las fases 1–6 está en esta rama. No hay tags `v1.1.0`–`v1.6.0`.
+La publicación está bloqueada por licencia y por autorización explícita de tag;
+ver [docs/RELEASE.md](docs/RELEASE.md).
+
+## Futuro
+
+### Licencia y tag v1.6.0
+
+Pendiente de decisión del propietario (licencia + autorización de tag/push).
 
 ## Fase 7 — v2.0.0 (breaking, cuando consumidores estén listos)
 
@@ -247,8 +258,8 @@ Objetivo: seguir usando `github.com/WilsonSayago/initModules` como librería com
 
 ### Criterios de aceptación
 
-- [ ] Todos los consumidores en `go.mod` usan `v2`.
-- [ ] Guía de migración v1 → v2 publicada.
+- [ ] Todos los consumidores en `go.mod` usan `github.com/WilsonSayago/initModules/v2`.
+- [ ] Guía de migración v1 → v2 publicada (module path `/v2`).
 
 ---
 
@@ -303,4 +314,4 @@ Fase 7 cuando inventario sin GetInstance(string)
 - Preferir **constructores explícitos** en capas internas; la lib solo garantiza singleton y orden de vida.
 - Si el grafo supera ~15 dependencias, evaluar `fx` o `wire` en Fase 7+ sin reescribir la lib entera.
 
-*Última actualización: 2026-05-26*
+*Última actualización: 2026-09-16*

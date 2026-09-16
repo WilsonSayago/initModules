@@ -1,14 +1,17 @@
 # Migration guide
 
-## Upgrading between v1.x releases (v1.0 → v1.6)
+## Upgrading between v1.x releases (v1.0 → unpublished v1.6.0)
 
-No breaking changes if you keep using deprecated APIs. Recommended incremental steps:
+The only published tag is still `v1.0.6`. The steps below describe the additive
+v1 APIs on this branch (proposed tag `v1.6.0`). No breaking changes if you keep
+using deprecated APIs. Recommended incremental steps:
 
 1. **v1.1** — No code changes required; `GetInstance` is thread-safe.
 2. **v1.2** — Switch to `AddPropE` + `LoadProperties` in `main` (handle `error`).
 3. **v1.3** — Replace `NewInstance[T]().GetInstance(fn)` with `OnceValue(fn)` or `Once(fn)`.
 4. **v1.4** — Implement `Lifecycle` for DB/queues; use `Register` + `RunWithSignals`.
 5. **v1.5** — Add `internal/bootstrap` composition root (see `base-golang`).
+6. **v1.6 (this branch)** — `PropValidator`, strict YAML/env, atomic load, `NewApp` isolation, hardened `OnceIn` / legacy adapters, Go 1.24 minimum.
 
 ### Config loading
 
@@ -69,6 +72,15 @@ Package-level `Register`, `RunContext`, and `RunWithSignals` remain in v1 and op
 ---
 
 ## Preparing for v2.0 (planned)
+
+A Go major version **must** change the module path. v2 will be:
+
+```text
+module github.com/WilsonSayago/initModules/v2
+```
+
+Imports become `github.com/WilsonSayago/initModules/v2`. There is no v2 module
+or `/v2` directory yet.
 
 The following will be **removed** in v2:
 

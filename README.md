@@ -54,8 +54,11 @@ cd examples/standalone && go run .
 
 ## Installation
 
+The last published git tag is **v1.0.6**. This branch is preparing **v1.6.0**
+(not tagged yet).
+
 ```sh
-go get github.com/WilsonSayago/initModules@v1.6.0
+go get github.com/WilsonSayago/initModules@v1.0.6
 ```
 
 In a **go.work** monorepo, add `use ./initModules` and depend on the local module path.
@@ -145,6 +148,7 @@ Reference: `groowcity-cron`, `rabbitmq-golang`.
 - [ROADMAP.md](ROADMAP.md) — evolution plan
 - [CHANGELOG.md](CHANGELOG.md) — release notes
 - [docs/INVENTORY.md](docs/INVENTORY.md) — known consumers
+- [docs/RELEASE.md](docs/RELEASE.md) — publication checklist (no tag until authorized)
 
 ## Development
 
@@ -172,7 +176,8 @@ Package-level `Register`, `RunContext`, and `RunWithSignals` still target a shar
 
 ## License
 
-See repository license (if applicable).
+License is pending an explicit owner choice. A `LICENSE` file will be added
+before any public tag.
 
 ## Contributing
 

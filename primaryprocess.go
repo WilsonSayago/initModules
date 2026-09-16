@@ -21,6 +21,9 @@ func RegisterProcess(p IProcess) {
 	Register(ProcessAdapter{Process: p})
 }
 
+// RunProcesses starts registered IProcess values in goroutines.
+//
+// Deprecated: implement Lifecycle and use NewApp with RunWithSignals instead.
 func RunProcesses() {
 	for _, p := range processes {
 		if isNilValue(p) {

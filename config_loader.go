@@ -149,7 +149,7 @@ func AddPropE(p interface{}) error {
 }
 
 // LoadProperties loads all globally registered properties (see AddPropE / AddProp).
-// Options override path, format, and ExpandEnv for this call only.
+// Options override path, format, ExpandEnv, StrictYAML, and StrictEnv for this call only.
 func LoadProperties(opts ...Option) error {
 	settings, err := resolveLoadSettings(opts)
 	if err != nil {

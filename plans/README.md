@@ -20,7 +20,7 @@ leer el plan completo, respetar sus condiciones de parada y actualizar su fila.
 | 004 | Convertir `App` en una unidad realmente aislada | P1 | L | 002 | DONE |
 | 005 | Endurecer contenedores y adaptadores heredados | P2 | M | 001, 004 | DONE |
 | 006 | Actualizar Go, dependencias y supply chain de CI | P1 | L | 001–005 | DONE |
-| 007 | Preparar una release v1 verificable | P1 | M | 001–006 | TODO |
+| 007 | Preparar una release v1 verificable | P1 | M | 001–006 | BLOCKED (licencia; sin tag/push) |
 
 Valores: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED (<razón>)` o
 `REJECTED (<razón>)`.
@@ -63,12 +63,16 @@ Valores: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED (<razón>)` o
 - **Plan 005 — corregido**: el panic de instancia nil ya no ocurre dentro de
   `sync.Once`; el fallo se recuerda y la segunda llamada conserva el mensaje
   accionable. Pasan pruebas enfocadas, suite, race, vet y formato.
-- **Plan 006 — verificado 2026-09-16**: Go mínimo `1.24.0` y toolchain
-  `go1.27.1` (suite, vet, race y ejemplo en `go1.24.13` y `go1.27.1`);
-  properties `v1.18.11` (módulo y checksum oficiales; `Decode` sin cambio de
-  API); YAML v3.0.1; golangci-lint v2.13.2; govulncheck v1.8.0; actions
-  pinneadas por SHA. La ejecución remota de GitHub Actions queda sin observar:
-  la rama no está publicada.
+- **Plan 006 — corregido**: el job `test` (y example/lint/vuln) fija
+  `GOTOOLCHAIN: local` y reporta `go version` / `GOVERSION`. Eso impide que
+  `toolchain go1.27.1` sustituya el binario 1.24.13 de la matriz. Pasan YAML,
+  vet, suite, lint v2.13.2 y govulncheck v1.8.0 en local. La ejecución remota
+  de GitHub Actions queda sin observar: la rama no está publicada.
+- **Plan 007 — BLOCKED 2026-09-16**: documentación de release preparada
+  (changelog honesto, README `@v1.0.6`, migración `/v2`, checklist). API diff
+  contra `v1.0.6` sin cambios incompatibles; candidato `v1.6.0`. Falta elección
+  explícita de licencia y autorización de tag/push. El árbol conserva archivos
+  de planes del propietario sin confirmar.
 
 ## Dependencias
 
