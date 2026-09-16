@@ -14,12 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `WithStrictEnv` — opt-in `${NAME}` expansion that errors on unset variables and maps `$$` to `$`.
 - atomic config load: decode and validate independent copies of current values, then commit only if every target succeeds. Omitted fields keep constructor defaults; pre-existing maps, slices, and pointers are not mutated on failure.
 - `NewApp`, `(*App).RunContext`, `(*App).RunWithSignals`, and `ErrAppRunning` for isolated, concurrent-safe app runs.
+- Dependabot for Go modules and GitHub Actions (weekly, grouped; prereleases stay excluded).
 
 ### Changed
 
 - Go language minimum is 1.24.0 with recommended toolchain go1.27.1 (verified 2026-09-16 on go.dev: go1.24.13 and go1.27.1).
 - `github.com/magiconair/properties` v1.18.11 (official consecutive release after v1.8.10; `Decode` API unchanged).
 - YAML remains `gopkg.in/yaml.v3` v3.0.1; yaml v4 is still release-candidate only.
+- CI tests Go 1.24.13 and 1.27.1; golangci-lint v2.13.2 and govulncheck v1.8.0 run on current stable.
+- GitHub Actions are pinned by full commit SHA (`checkout` v7.0.1, `setup-go` v7.0.0, `upload-artifact` v7.0.1, `golangci-lint-action` v9.3.0).
 - Invalid options, empty target lists, typed-nil targets, and unsupported formats are rejected before reading the file.
 - Shutdown-unrelated config errors wrap the operation and filename without embedding env values or file contents.
 - Package-level `Register`, `RunContext`, and `RunWithSignals` delegate to a shared default `App`; registrations during a run apply only to the next run.

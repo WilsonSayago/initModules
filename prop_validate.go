@@ -10,7 +10,7 @@ func validatePropTarget(p interface{}) error {
 		return fmt.Errorf("AddProp: parameter must be a pointer to struct, got nil")
 	}
 	value := reflect.ValueOf(p)
-	if value.Kind() != reflect.Ptr || value.IsNil() || value.Elem().Kind() != reflect.Struct {
+	if value.Kind() != reflect.Pointer || value.IsNil() || value.Elem().Kind() != reflect.Struct {
 		return fmt.Errorf("AddProp: parameter must be a pointer to struct, got %T", p)
 	}
 	return nil

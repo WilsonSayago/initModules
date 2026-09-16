@@ -19,7 +19,7 @@ leer el plan completo, respetar sus condiciones de parada y actualizar su fila.
 | 003 | Hacer la carga de configuración validable, estricta y atómica | P1 | L | 001 | DONE |
 | 004 | Convertir `App` en una unidad realmente aislada | P1 | L | 002 | DONE |
 | 005 | Endurecer contenedores y adaptadores heredados | P2 | M | 001, 004 | DONE |
-| 006 | Actualizar Go, dependencias y supply chain de CI | P1 | L | 001–005 | TODO |
+| 006 | Actualizar Go, dependencias y supply chain de CI | P1 | L | 001–005 | DONE |
 | 007 | Preparar una release v1 verificable | P1 | M | 001–006 | TODO |
 
 Valores: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED (<razón>)` o
@@ -63,6 +63,12 @@ Valores: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED (<razón>)` o
 - **Plan 005 — corregido**: el panic de instancia nil ya no ocurre dentro de
   `sync.Once`; el fallo se recuerda y la segunda llamada conserva el mensaje
   accionable. Pasan pruebas enfocadas, suite, race, vet y formato.
+- **Plan 006 — verificado 2026-09-16**: Go mínimo `1.24.0` y toolchain
+  `go1.27.1` (suite, vet, race y ejemplo en `go1.24.13` y `go1.27.1`);
+  properties `v1.18.11` (módulo y checksum oficiales; `Decode` sin cambio de
+  API); YAML v3.0.1; golangci-lint v2.13.2; govulncheck v1.8.0; actions
+  pinneadas por SHA. La ejecución remota de GitHub Actions queda sin observar:
+  la rama no está publicada.
 
 ## Dependencias
 

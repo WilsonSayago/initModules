@@ -1,0 +1,32 @@
+# Dependabot does not propose Go module or Action prereleases by default.
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      go-modules:
+        patterns:
+          - "*"
+
+  - package-ecosystem: gomod
+    directory: /examples/standalone
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      example-go-modules:
+        patterns:
+          - "*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      github-actions:
+        patterns:
+          - "*"

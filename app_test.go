@@ -491,11 +491,11 @@ func TestApp_NilContextDoesNotPanic(t *testing.T) {
 	var recovered any
 	func() {
 		defer func() { recovered = recover() }()
-		err := app.RunContext(nil, RunOptions{RunLifecycles: true, StopTimeout: time.Second})
+		err := app.RunContext(nil, RunOptions{RunLifecycles: true, StopTimeout: time.Second}) //nolint:staticcheck // documents nil-context fallback
 		if err == nil {
 			t.Fatal("expected start error")
 		}
-		if err := app.RunWithSignals(nil, RunOptions{RunLifecycles: true, StopTimeout: time.Second}); err == nil {
+		if err := app.RunWithSignals(nil, RunOptions{RunLifecycles: true, StopTimeout: time.Second}); err == nil { //nolint:staticcheck // documents nil-context fallback
 			t.Fatal("expected start error from RunWithSignals")
 		}
 	}()

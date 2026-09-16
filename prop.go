@@ -29,6 +29,7 @@ var propType = YML
 var props = make([]interface{}, 0)
 
 // SetFilePath sets the global configuration file path and format.
+//
 // Deprecated: prefer LoadProperties(initModules.WithFilePath(...), initModules.WithFormat(...)).
 func SetFilePath(pt PropType, p string) {
 	propType = pt
@@ -36,6 +37,7 @@ func SetFilePath(pt PropType, p string) {
 }
 
 // AddProp registers a property on the global loader.
+//
 // Deprecated: use AddPropE; handle the returned error in main instead of log.Fatal inside the library.
 func AddProp(p interface{}) {
 	if err := AddPropE(p); err != nil {
@@ -44,6 +46,7 @@ func AddProp(p interface{}) {
 }
 
 // RunLoadProperties loads globally registered properties using global path and format settings.
+//
 // Deprecated: use LoadProperties; handle errors in application main.
 func RunLoadProperties() {
 	log.Println("Started load properties from file: ", propPath)

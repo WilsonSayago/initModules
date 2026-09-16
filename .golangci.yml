@@ -1,8 +1,11 @@
+version: "2"
+
 run:
   timeout: 5m
   tests: true
 
 linters:
+  default: none
   enable:
     - errcheck
     - govet
@@ -12,22 +15,19 @@ linters:
     - misspell
     - unconvert
     - gocritic
-
-linters-settings:
-  govet:
-    enable-all: true
-    disable:
-      - fieldalignment
-      - shadow
-  gocritic:
-    disabled-checks:
-      - dupImport
-      - ifElseChain
-      - octalLiteral
-      - whyNoLint
-      - wrapperFunc
+  settings:
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment
+        - shadow
+    gocritic:
+      disabled-checks:
+        - ifElseChain
+        - wrapperFunc
+  exclusions:
+    generated: lax
 
 issues:
-  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0

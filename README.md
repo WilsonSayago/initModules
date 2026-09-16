@@ -149,16 +149,18 @@ Reference: `groowcity-cron`, `rabbitmq-golang`.
 ## Development
 
 ```sh
-make fmt-check  # verify gofmt
-make test       # repeat unit tests 20 times
-make test-race  # race detector + atomic coverage
-make vet        # go vet ./...
-make example    # test the standalone nested module
-make lint       # golangci-lint (install: https://golangci-lint.run/welcome/install/)
-make ci         # run all local CI gates
+make fmt-check    # verify gofmt
+make test         # repeat unit tests 20 times
+make test-race    # race detector + atomic coverage
+make vet          # go vet ./...
+make example      # test the standalone nested module
+make lint-verify  # golangci-lint v2.13.2 config schema
+make lint         # golangci-lint v2.13.2
+make vuln         # govulncheck v1.8.0
+make ci           # run all local CI gates
 ```
 
-CI runs the same formatting, repeated test, race/coverage, vet, nested-module, and lint gates on every push/PR.
+CI tests Go 1.24.13 and 1.27.1, then runs the nested example, golangci-lint v2.13.2, and govulncheck v1.8.0 on current stable. Workflow actions are pinned by commit SHA. Dependabot updates Go modules and GitHub Actions weekly; prereleases stay excluded.
 
 ## Migration
 
