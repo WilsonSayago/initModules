@@ -46,6 +46,18 @@ Domain packages should **not** import `initModules`. Only `cmd`, `bootstrap`, an
 
 `App` is a **lightweight composition root**: it stores an ordered list of `Lifecycle` values and runs start/stop. It does not construct or look up dependencies; each service still wires databases, clients, and config in `internal/bootstrap` and then registers the resulting components.
 
+## Diagrams
+
+Interactive Archify diagrams (open the HTML in a browser):
+
+| View | HTML |
+|------|------|
+| Component map (library vs consumer) | [diagrams/initmodules-architecture.html](diagrams/initmodules-architecture.html) |
+| Typical startup workflow | [diagrams/initmodules-startup.html](diagrams/initmodules-startup.html) |
+| `App` lifecycle (Start / Stop) | [diagrams/initmodules-app-lifecycle.html](diagrams/initmodules-app-lifecycle.html) |
+
+Index and regenerate notes: [diagrams/README.md](diagrams/README.md).
+
 ## Versioning
 
 - **v1.x** — module path `github.com/WilsonSayago/initModules` (no suffix). Last published tag: `v1.0.6`.
@@ -54,6 +66,7 @@ Domain packages should **not** import `initModules`. Only `cmd`, `bootstrap`, an
 ## Related docs
 
 - [README.md](../README.md) — usage and quickstart
-- [ROADMAP.md](ROADMAP.md) — evolution plan
-- [history/inventory-2026-05-26.md](history/inventory-2026-05-26.md) — historical consumer inventory (2026-05-26 snapshot)
+- [diagrams/README.md](diagrams/README.md) — interactive Archify diagrams
+- [MIGRATION.md](MIGRATION.md) — upgrades and deprecated API replacements
+- [RELEASE.md](RELEASE.md) — publication checklist
 - [examples/standalone](../examples/standalone) — minimal config-only app

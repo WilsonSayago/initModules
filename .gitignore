@@ -21,3 +21,7 @@
 
 # Go workspace file
 go.work
+
+# Archify visual-check sidecars and delivery scratch (regenerate locally)
+docs/diagrams/*.visual-check.*
+docs/diagrams/.archify-delivery-*/

@@ -1,0 +1,205 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "initModules — Ciclo de vida de App",
+    "quality_profile": "showcase",
+    "viewBox": [1080, 640],
+    "views": [
+      {
+        "id": "main-path",
+        "label": "Camino principal",
+        "focus": ["idle", "starting", "running", "stopping", "stopped"],
+        "note": "Register → Start ordenado → bloqueo → Stop inverso → idle listo."
+      },
+      {
+        "id": "signal-wait",
+        "label": "Espera de señal",
+        "focus": ["running", "await_signal", "stopping"],
+        "note": "RunWithSignals cancela el contexto ante INT/TERM/HUP/QUIT."
+      },
+      {
+        "id": "failure",
+        "label": "Fallo de Start",
+        "focus": ["starting", "start_failed", "stopping"],
+        "note": "Error en Start dispara stopAll de los ya iniciados y puede reintentarse."
+      }
+    ]
+  },
+  "lanes": [
+    { "id": "main", "label": "Fases de App" },
+    { "id": "waiting", "label": "Espera" },
+    { "id": "exceptions", "label": "Recuperación" },
+    { "id": "terminal", "label": "Salidas" }
+  ],
+  "states": [
+    {
+      "id": "idle",
+      "type": "start",
+      "label": "Idle",
+      "sublabel": "NewApp / Register",
+      "lane": "main",
+      "col": 0,
+      "step": "01",
+      "tag": "entry"
+    },
+    {
+      "id": "starting",
+      "type": "active",
+      "label": "Starting",
+      "sublabel": "Start en orden",
+      "lane": "main",
+      "col": 1,
+      "step": "02",
+      "tag": "work"
+    },
+    {
+      "id": "running",
+      "type": "active",
+      "label": "Running",
+      "sublabel": "espera ctx.Done",
+      "lane": "main",
+      "col": 2,
+      "step": "03",
+      "tag": "serve"
+    },
+    {
+      "id": "stopping",
+      "type": "decision",
+      "label": "Stopping",
+      "sublabel": "Stop inverso",
+      "lane": "main",
+      "col": 3,
+      "step": "04",
+      "tag": "shutdown"
+    },
+    {
+      "id": "stopped",
+      "type": "success",
+      "label": "Stopped",
+      "sublabel": "running=false",
+      "lane": "main",
+      "col": 4,
+      "step": "05",
+      "tag": "done"
+    },
+    {
+      "id": "await_signal",
+      "type": "waiting",
+      "label": "Await signal",
+      "sublabel": "NotifyContext",
+      "lane": "waiting",
+      "col": 0,
+      "tag": "pause"
+    },
+    {
+      "id": "busy",
+      "type": "waiting",
+      "label": "Busy",
+      "sublabel": "ErrAppRunning",
+      "lane": "waiting",
+      "col": 1,
+      "tag": "reject"
+    },
+    {
+      "id": "start_failed",
+      "type": "failure",
+      "label": "Start failed",
+      "sublabel": "rollback Stop",
+      "lane": "exceptions",
+      "col": 0,
+      "yOffset": 78,
+      "tag": "retryable"
+    },
+    {
+      "id": "aborted",
+      "type": "failure",
+      "label": "Aborted",
+      "sublabel": "Stop con error",
+      "lane": "terminal",
+      "col": 0,
+      "tag": "terminal"
+    },
+    {
+      "id": "timed_out",
+      "type": "failure",
+      "label": "Timed out",
+      "sublabel": "StopTimeout",
+      "lane": "terminal",
+      "col": 1,
+      "tag": "terminal"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "t-await",
+      "from": "running",
+      "to": "await_signal",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "t-busy",
+      "from": "stopping",
+      "to": "busy",
+      "variant": "default",
+      "route": "drop"
+    },
+    {
+      "id": "t-start-fail",
+      "from": "starting",
+      "to": "start_failed",
+      "variant": "security",
+      "fromSide": "left",
+      "toSide": "left",
+      "via": [[320, 157], [320, 385]]
+    },
+    {
+      "id": "t-fail-stop",
+      "from": "start_failed",
+      "to": "running",
+      "variant": "emphasis",
+      "fromSide": "left",
+      "toSide": "top",
+      "via": [[20, 385], [20, 80], [402, 80]]
+    },
+    {
+      "id": "t-abort",
+      "from": "await_signal",
+      "to": "aborted",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [[480, 336], [480, 432], [402, 432]]
+    },
+    {
+      "id": "t-timeout",
+      "from": "busy",
+      "to": "timed_out",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Orden garantizado",
+      "items": [
+        "Start en orden de Register; Stop en orden inverso",
+        "Timeout de Stop por defecto: 30s (RunOptions.StopTimeout)"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Aislamiento",
+      "items": [
+        "NewApp() aísla lifecycles del App global legacy",
+        "Un segundo Run concurrente responde ErrAppRunning"
+      ]
+    }
+  ]
+}

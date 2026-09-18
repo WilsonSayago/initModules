@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "initModules — Mapa de componentes",
+    "quality_profile": "showcase",
+    "viewBox": [1200, 680],
+    "repository": {
+      "url": "https://github.com/WilsonSayago/initModules",
+      "provider": "github",
+      "revision": "dbf28e1be49eb119cea31331dc367fa0c8688249"
+    },
+    "views": [
+      {
+        "id": "bootstrap-path",
+        "label": "Camino de arranque",
+        "focus": ["cmd", "bootstrap", "app", "adapters"],
+        "note": "Desde cmd hasta el App aislado y los adaptadores Lifecycle."
+      },
+      {
+        "id": "config-path",
+        "label": "Configuración",
+        "focus": ["bootstrap", "config", "files", "env"],
+        "note": "Carga atómica YAML/.properties con expansión de entorno."
+      },
+      {
+        "id": "isolation",
+        "label": "Aislamiento",
+        "focus": ["once", "container", "app", "domain"],
+        "note": "Singletons tipados, Container opcional y dominio sin importar initModules."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "cmd",
+      "type": "backend",
+      "label": "cmd/main.go",
+      "sublabel": "entrypoint fino",
+      "pos": [40, 300],
+      "size": [128, 56],
+      "sources": [{ "path": "examples/standalone/main.go", "line": 30, "label": "ejemplo" }]
+    },
+    {
+      "id": "bootstrap",
+      "type": "backend",
+      "label": "internal/bootstrap",
+      "sublabel": "composition root",
+      "pos": [210, 300],
+      "size": [156, 56],
+      "tag": "servicio",
+      "sources": [{ "path": "docs/ARCHITECTURE.md", "line": 19, "label": "contrato" }]
+    },
+    {
+      "id": "config",
+      "type": "backend",
+      "label": "ConfigLoader",
+      "sublabel": "LoadProperties",
+      "pos": [460, 100],
+      "size": [148, 56],
+      "sources": [{ "path": "config_loader.go", "line": 67, "end_line": 79, "label": "loader" }]
+    },
+    {
+      "id": "files",
+      "type": "external",
+      "label": "YAML / .properties",
+      "sublabel": "archivo de config",
+      "pos": [700, 50],
+      "size": [156, 52]
+    },
+    {
+      "id": "env",
+      "type": "security",
+      "label": "Entorno",
+      "sublabel": "${NAME} / strict",
+      "pos": [700, 140],
+      "size": [156, 52],
+      "tag": "WithStrictEnv",
+      "sources": [{ "path": "config_loader.go", "line": 57, "end_line": 64, "label": "strict env" }]
+    },
+    {
+      "id": "once",
+      "type": "backend",
+      "label": "Once / OnceValue",
+      "sublabel": "singleton tipado",
+      "pos": [460, 460],
+      "size": [148, 56],
+      "sources": [{ "path": "once.go", "line": 18, "end_line": 32, "label": "Once" }]
+    },
+    {
+      "id": "container",
+      "type": "backend",
+      "label": "Container",
+      "sublabel": "OnceIn aislado",
+      "pos": [670, 460],
+      "size": [140, 56],
+      "sources": [{ "path": "container.go", "line": 11, "end_line": 24, "label": "Container" }]
+    },
+    {
+      "id": "app",
+      "type": "backend",
+      "label": "App",
+      "sublabel": "NewApp + Register",
+      "pos": [460, 300],
+      "size": [148, 56],
+      "tag": "no DI",
+      "sources": [{ "path": "app.go", "line": 28, "end_line": 65, "label": "App" }]
+    },
+    {
+      "id": "adapters",
+      "type": "backend",
+      "label": "Lifecycles",
+      "sublabel": "DB · HTTP · cola",
+      "pos": [720, 300],
+      "size": [140, 56],
+      "sources": [{ "path": "lifecycle.go", "line": 8, "end_line": 12, "label": "interface" }]
+    },
+    {
+      "id": "domain",
+      "type": "backend",
+      "label": "internal/core",
+      "sublabel": "dominio hexagonal",
+      "pos": [940, 300],
+      "size": [140, 56],
+      "tag": "sin initModules"
+    },
+    {
+      "id": "signals",
+      "type": "external",
+      "label": "OS signals",
+      "sublabel": "INT · TERM · HUP",
+      "pos": [880, 460],
+      "size": [140, 52],
+      "sources": [{ "path": "app.go", "line": 174, "end_line": 188, "label": "signals" }]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Librería initModules/v2",
+      "wraps": ["config", "once", "container", "app", "signals"]
+    },
+    {
+      "kind": "region",
+      "label": "Composition root (servicio)",
+      "wraps": ["cmd", "bootstrap"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "cmd-bootstrap",
+      "from": "cmd",
+      "to": "bootstrap",
+      "variant": "emphasis",
+      "labelDy": 36
+    },
+    {
+      "id": "bootstrap-config",
+      "from": "bootstrap",
+      "to": "config",
+      "label": "LoadProperties",
+      "fromSide": "top",
+      "toSide": "left",
+      "labelDy": -20
+    },
+    {
+      "id": "config-files",
+      "from": "config",
+      "to": "files",
+      "label": "lee archivo",
+      "fromSide": "right",
+      "toSide": "left",
+      "labelDy": -24
+    },
+    {
+      "id": "config-env",
+      "from": "config",
+      "to": "env",
+      "label": "expande ENV",
+      "variant": "security",
+      "fromSide": "right",
+      "toSide": "left",
+      "labelDy": 24
+    },
+    {
+      "id": "bootstrap-once",
+      "from": "bootstrap",
+      "to": "once",
+      "label": "OnceValue",
+      "fromSide": "bottom",
+      "toSide": "left",
+      "labelDy": 28
+    },
+    {
+      "id": "once-container",
+      "from": "once",
+      "to": "container",
+      "label": "OnceIn",
+      "variant": "dashed",
+      "labelDy": -28
+    },
+    {
+      "id": "bootstrap-app",
+      "from": "bootstrap",
+      "to": "app",
+      "label": "NewApp",
+      "variant": "emphasis",
+      "labelDy": -28
+    },
+    {
+      "id": "app-adapters",
+      "from": "app",
+      "to": "adapters",
+      "label": "Start / Stop",
+      "labelDy": -28
+    },
+    {
+      "id": "signals-app",
+      "from": "signals",
+      "to": "app",
+      "label": "RunWithSignals",
+      "variant": "dashed",
+      "fromSide": "left",
+      "toSide": "bottom",
+      "labelDy": 20
+    },
+    {
+      "id": "adapters-domain",
+      "from": "adapters",
+      "to": "domain",
+      "label": "usa puertos",
+      "variant": "dashed",
+      "labelDy": -28
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Camino principal",
+      "items": [
+        "cmd → bootstrap → App → Lifecycles (Start ordenado, Stop inverso)",
+        "Toolkit de bootstrap (no DI): config, singletons y lifecycle"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Límites",
+      "items": [
+        "internal/core no debe importar initModules",
+        "Preferir NewApp aislado; globales legacy solo para migración"
+      ]
+    }
+  ]
+}
