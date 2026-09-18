@@ -7,12 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Proposed first public tag after `v1.0.6`: **v1.6.0** (not tagged yet). Git
-tags `v1.1.0`–`v1.6.0` were never created; earlier changelog dates described
-local phases, not published releases.
+Proposed first public **v2** tag: **v2.0.0** (not tagged yet). Module path is
+`github.com/WilsonSayago/initModules/v2` per Go’s major-version suffix rule.
+Previous major remains `github.com/WilsonSayago/initModules@v1.0.6`.
 
-Compared with `v1.0.6` using `golang.org/x/exp/cmd/apidiff@v0.0.0-20260908205506-85c1c2202aba`:
-compatible additions only, no removed or signature-incompatible exports.
+Compared with `v1.0.6` using `golang.org/x/exp/cmd/apidiff@v0.0.0-20260908205506-85c1c2202aba`
+(before the module-path change): compatible API additions only; no removed or
+signature-incompatible exports. The `/v2` module path itself is the SemVer major
+bump for consumers.
 
 ### Added
 
@@ -30,6 +32,7 @@ compatible additions only, no removed or signature-incompatible exports.
 
 ### Changed
 
+- Module path is `github.com/WilsonSayago/initModules/v2` (Go convention for major version ≥ 2). Import `github.com/WilsonSayago/initModules/v2`; package name remains `initModules`. Publish tags as `v2.x.y`.
 - Go language minimum is 1.24.0 with recommended toolchain go1.27.1 (verified 2026-09-16 on go.dev: go1.24.13 and go1.27.1).
 - `github.com/magiconair/properties` v1.18.11 (official consecutive release after v1.8.10; `Decode` API unchanged).
 - YAML remains `gopkg.in/yaml.v3` v3.0.1; yaml v4 is still release-candidate only.

@@ -1,6 +1,6 @@
 # initModules — Plan de evolución
 
-Objetivo: seguir usando `github.com/WilsonSayago/initModules` como librería compartida de bootstrap entre microservicios (config, instancias compartidas, lifecycle), endureciendo la API sin romper consumidores de golpe.
+Objetivo: seguir usando `github.com/WilsonSayago/initModules/v2` como librería compartida de bootstrap entre microservicios (config, instancias compartidas, lifecycle), endureciendo la API sin romper consumidores de golpe.
 
 **Consumidores actuales:** `base-golang`, `groowcity-cron`, `rabbitmq-golang`, `authBase`.
 
@@ -23,8 +23,8 @@ Objetivo: seguir usando `github.com/WilsonSayago/initModules` como librería com
 
 **Versionado sugerido:**
 
-- `v1.6.0` — primer tag público después de `v1.0.6` (fases locales 1.1–1.6 nunca se etiquetaron).
-- `v2.0.0` — `module github.com/WilsonSayago/initModules/v2`; eliminar APIs deprecadas (`GetInstance` string, globals obligatorios).
+- `v1.0.6` — última tag publicada en el module path sin `/v2`.
+- `v2.0.0` — `module github.com/WilsonSayago/initModules/v2` (sufijo obligatorio en Go); APIs aditivas actuales; limpieza de deprecados en releases posteriores.
 
 ---
 
@@ -239,15 +239,16 @@ Objetivo: seguir usando `github.com/WilsonSayago/initModules` como librería com
 
 ## Hecho (código en esta rama, tag pendiente)
 
-Todo el trabajo de las fases 1–6 está en esta rama. No hay tags `v1.1.0`–`v1.6.0`.
-La publicación está bloqueada por licencia y por autorización explícita de tag;
+Todo el trabajo de las fases 1–6 está en esta rama bajo
+`module github.com/WilsonSayago/initModules/v2`. No hay tag `v2.0.0` todavía.
+La publicación sigue bloqueada por licencia y por autorización explícita de tag;
 ver [RELEASE.md](RELEASE.md).
 
 ## Futuro
 
-### Licencia y tag v1.6.0
+### Licencia y tag v2.0.0
 
-Pendiente de decisión del propietario (licencia + autorización de tag/push).
+Pendiente de decisión del propietario (licencia + autorización de tag/push `v2.0.0`).
 
 ## Fase 7 — v2.0.0 (breaking, cuando consumidores estén listos)
 

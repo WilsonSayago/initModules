@@ -48,8 +48,8 @@ Domain packages should **not** import `initModules`. Only `cmd`, `bootstrap`, an
 
 ## Versioning
 
-- **v1.x** — additive changes; deprecated APIs retained (`GetInstance(string)`, `SetFilePath`, `IProcess`). Last published tag: `v1.0.6`. Proposed next tag: `v1.6.0`.
-- **v2** (planned) — module path `github.com/WilsonSayago/initModules/v2`; remove deprecated globals and `log.Fatal` wrappers; see [MIGRATION.md](MIGRATION.md).
+- **v1.x** — module path `github.com/WilsonSayago/initModules` (no suffix). Last published tag: `v1.0.6`.
+- **v2.x** — module path `github.com/WilsonSayago/initModules/v2` (required by Go for major ≥ 2). Tags: `v2.0.0`, …. Deprecated globals are still retained for migration; see [MIGRATION.md](MIGRATION.md).
 
 ## Related docs
 

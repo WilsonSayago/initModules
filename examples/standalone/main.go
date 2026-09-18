@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/WilsonSayago/initModules"
+	"github.com/WilsonSayago/initModules/v2"
 )
 
 type AppConfig struct {

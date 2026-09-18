@@ -1,10 +1,33 @@
 # Migration guide
 
-## Upgrading between v1.x releases (v1.0 → unpublished v1.6.0)
+## Module path (v2)
 
-The only published tag is still `v1.0.6`. The steps below describe the additive
-v1 APIs on this branch (proposed tag `v1.6.0`). No breaking changes if you keep
-using deprecated APIs. Recommended incremental steps:
+This repository’s root `go.mod` declares:
+
+```text
+module github.com/WilsonSayago/initModules/v2
+```
+
+Import as:
+
+```go
+import "github.com/WilsonSayago/initModules/v2"
+```
+
+The Go package name remains `initModules`. Publish with annotated tags
+`v2.0.0`, `v2.0.1`, … (not `v1.x`). Consumers still on major 1 use
+`github.com/WilsonSayago/initModules@v1.0.6` without the `/v2` suffix.
+
+---
+
+## Upgrading from v1.0.6 to v2
+
+1. Change the require / import path to `github.com/WilsonSayago/initModules/v2`.
+2. Prefer the additive APIs below (`LoadProperties`, `Once`, `NewApp`, …).
+3. Deprecated v1 symbols remain for compatibility until a later breaking cleanup.
+
+No breaking changes to symbol names if you keep using deprecated APIs.
+Recommended incremental steps from the v1 eras:
 
 1. **v1.1** — No code changes required; `GetInstance` is thread-safe.
 2. **v1.2** — Switch to `AddPropE` + `LoadProperties` in `main` (handle `error`).
@@ -65,24 +88,16 @@ if err := app.RunWithSignals(ctx, initModules.RunOptions{
 }); err != nil { log.Fatal(err) }
 ```
 
-Package-level `Register`, `RunContext`, and `RunWithSignals` remain in v1 and operate on a shared default `App`. New services should use `NewApp`. Those globals are planned for deprecation in v2.
+Package-level `Register`, `RunContext`, and `RunWithSignals` remain for compatibility and operate on a shared default `App`. New services should use `NewApp`. Those globals are planned for removal in a later cleanup.
 
 `OnceIn` / `OnceValueIn` require a non-nil `NewContainer()`. Passing `nil` panics with a message to use `NewContainer` or the global `Once` APIs; it no longer falls back to the process-wide registry. Keep `IProcess` / `RegisterProcess` only while migrating; new components should implement `Lifecycle`.
 
 ---
 
-## Preparing for v2.0 (planned)
+## Preparing for a later breaking cleanup
 
-A Go major version **must** change the module path. v2 will be:
-
-```text
-module github.com/WilsonSayago/initModules/v2
-```
-
-Imports become `github.com/WilsonSayago/initModules/v2`. There is no v2 module
-or `/v2` directory yet.
-
-The following will be **removed** in v2:
+The **module path is already** `github.com/WilsonSayago/initModules/v2`.
+A future release may still remove deprecated APIs:
 
 | Removed | Replacement |
 |---------|-------------|
@@ -93,7 +108,7 @@ The following will be **removed** in v2:
 | package-level `Register`, `RunContext`, `RunWithSignals` | `NewApp()` and instance methods |
 | `log.Fatal` inside library | Always return `error` to `main` |
 
-Before upgrading to v2:
+Before relying on a cleanup release:
 
 - [ ] No `GetInstance("…")` in your module (grep your codebase).
 - [ ] No `Init(true, true)` with duplicate property loading.

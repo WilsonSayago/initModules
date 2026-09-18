@@ -16,7 +16,7 @@ import (
     "context"
     "log"
 
-    "github.com/WilsonSayago/initModules"
+    "github.com/WilsonSayago/initModules/v2"
 )
 
 func main() {
@@ -54,11 +54,13 @@ cd examples/standalone && go run .
 
 ## Installation
 
-The last published git tag is **v1.0.6**. This branch is preparing **v1.6.0**
-(not tagged yet).
+Go major versions ≥ 2 require the `/v2` module path ([Go modules](https://go.dev/ref/mod#major-version-suffixes)).
+This module is `github.com/WilsonSayago/initModules/v2`. Tags must be `v2.x.y`
+(for example `v2.0.0`). The previous major remains available as
+`github.com/WilsonSayago/initModules@v1.0.6`.
 
 ```sh
-go get github.com/WilsonSayago/initModules@v1.0.6
+go get github.com/WilsonSayago/initModules/v2@latest
 ```
 
 In a **go.work** monorepo, add `use ./initModules` and depend on the local module path.
