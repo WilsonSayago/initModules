@@ -34,7 +34,8 @@ Recommended incremental steps from the v1 eras:
 3. **v1.3** — Replace `NewInstance[T]().GetInstance(fn)` with `OnceValue(fn)` or `Once(fn)`.
 4. **v1.4** — Implement `Lifecycle` for DB/queues; use `Register` + `RunWithSignals`.
 5. **v1.5** — Add `internal/bootstrap` composition root (see `base-golang`).
-6. **v1.6 (this branch)** — `PropValidator`, strict YAML/env, atomic load, `NewApp` isolation, hardened `OnceIn` / legacy adapters, Go 1.24 minimum.
+6. **v2.0** — `/v2` module path, `PropValidator`, strict YAML/env, atomic load,
+   `NewApp` isolation, hardened `OnceIn` / legacy adapters, and Go 1.24 minimum.
 
 ### Config loading
 
@@ -54,7 +55,13 @@ if err := initModules.LoadProperties(
 ); err != nil { log.Fatal(err) }
 ```
 
-Implement `PropValidator` (`Validate() error`) on new config structs. `Prop.Validate()` remains in v1 and is only used when the target does not implement `PropValidator`. Enable `WithStrictYAML(true)` and `WithStrictEnv(true)` for new services; the v1 defaults stay non-strict. Loads are atomic: failed decode or validation leaves previous target values unchanged, including constructor defaults for omitted fields. External side effects performed inside `Validate` are not reversible.
+Implement `PropValidator` (`Validate() error`) on new config structs.
+`Prop.Validate()` remains as a legacy fallback in v2 and is only used when the
+target does not implement `PropValidator`. Enable `WithStrictYAML(true)` and
+`WithStrictEnv(true)` for new services; compatibility defaults stay
+non-strict. Loads are atomic: failed decode or validation leaves previous
+target values unchanged, including constructor defaults for omitted fields.
+External side effects performed inside `Validate` are not reversible.
 
 ### Singletons
 
@@ -88,9 +95,21 @@ if err := app.RunWithSignals(ctx, initModules.RunOptions{
 }); err != nil { log.Fatal(err) }
 ```
 
-Package-level `Register`, `RunContext`, and `RunWithSignals` remain for compatibility and operate on a shared default `App`. New services should use `NewApp`. Those globals are planned for removal in a later cleanup.
+Package-level `Register`, `RegisterLifecycle`, `RunContext`, and
+`RunWithSignals` remain for compatibility and operate on a shared default
+`App`. New services should use `NewApp`. Those globals are candidates for
+removal in a later major.
 
-`OnceIn` / `OnceValueIn` require a non-nil `NewContainer()`. Passing `nil` panics with a message to use `NewContainer` or the global `Once` APIs; it no longer falls back to the process-wide registry. Keep `IProcess` / `RegisterProcess` only while migrating; new components should implement `Lifecycle`.
+`OnceIn` / `OnceValueIn` require a non-nil `NewContainer()`. Passing `nil`
+panics with a message to use `NewContainer` or the global `Once` APIs; it no
+longer falls back to the process-wide registry. Keep `IProcess` /
+`RegisterProcess` only while migrating; new components should implement
+`Lifecycle`. `ProcessAdapter.Stop` is intentionally a no-op because the legacy
+`IProcess` contract has no shutdown method.
+
+Legacy `Init` / `RunProcesses` launch processes as fire-and-forget goroutines
+and cannot provide graceful stop guarantees. Do not mix that execution model
+with an `App` lifecycle for the same component.
 
 ---
 

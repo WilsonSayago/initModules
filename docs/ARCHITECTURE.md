@@ -9,7 +9,7 @@
 | Config load | `LoadProperties`, `ConfigLoader`, `AddPropE` | YAML / `.properties`, `${ENV}` expansion |
 | Validation hook | `PropValidator` (`Prop` remains in v1) | Called after successful decode |
 | Singletons | `Once`, `OnceValue`, `OnceIn` | Prefer over string-key `GetInstance` |
-| Lifecycle | `App`, `NewApp`, `Lifecycle`, `(*App).RunContext`, `(*App).RunWithSignals` | Ordered start / reverse stop; isolated per App |
+| Lifecycle | `App`, `NewApp`, `Lifecycle`, `RunOptions`, `(*App).RunContext`, `(*App).RunWithSignals` | Ordered start / reverse stop; isolated per App; concurrent run returns `ErrAppRunning` |
 | Legacy bridge | package-level `Register` / `RunContext`, `IProcess`, `ProcessAdapter` | Shared default App; deprecated path |
 
 ## What belongs in each microservice
@@ -45,6 +45,11 @@ cmd/main.go
 Domain packages should **not** import `initModules`. Only `cmd`, `bootstrap`, and infrastructure wiring layers may import it.
 
 `App` is a **lightweight composition root**: it stores an ordered list of `Lifecycle` values and runs start/stop. It does not construct or look up dependencies; each service still wires databases, clients, and config in `internal/bootstrap` and then registers the resulting components.
+
+`RunOptions.LoadProperties` uses the configured global property registry,
+`RunLifecycles: false` only waits for context cancellation, and `StopTimeout`
+defaults to 30 seconds. Use `NewConfigLoader` when configuration loading must be
+isolated from global registry state.
 
 ## Diagrams
 

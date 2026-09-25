@@ -68,7 +68,7 @@ In a **go.work** monorepo, add `use ./initModules` and depend on the local modul
 ## Features
 
 - YAML / `.properties` config with `${ENV}` expansion
-- `PropValidator` after successful decode (`Prop` remains for v1 compatibility)
+- `PropValidator` after successful decode (`Prop` remains for legacy compatibility)
 - Optional strict YAML (`WithStrictYAML`) and strict env (`WithStrictEnv`)
 - Atomic config load: targets are not mutated unless decode and validation succeed for all of them
 - `Once` / `OnceValue` / `Container` singletons (thread-safe)
@@ -118,7 +118,7 @@ Reference: `groowcity-cron` (Mongo), `base-golang` (Postgres).
 
 Register DB lifecycles, route registration, then an `http.Server` with `Shutdown` on stop.
 
-Reference: [`base-golang/internal/bootstrap`](https://github.com/WilsonSayago/initModules) (consumer in monorepo).
+Reference: [`base-golang/internal/infra/bootstrap`](https://github.com/WilsonSayago/base-golang/tree/main/internal/infra/bootstrap).
 
 Recommended layout:
 
@@ -138,10 +138,16 @@ Reference: `groowcity-cron`, `rabbitmq-golang`.
 
 | Task | API |
 |------|-----|
-| Load config | `AddPropE`, `LoadProperties`, `NewConfigLoader`, `PropValidator` |
+| Load config | `AddPropE`, `LoadProperties`, `NewConfigLoader`, `ConfigLoader`, `PropValidator` |
 | Singleton | `OnceValue`, `Once`, `NewContainer`, `OnceIn` |
-| Graceful run | `NewApp`, `(*App).Register`, `(*App).RunWithSignals`, `(*App).RunContext` |
+| Graceful run | `NewApp`, `(*App).Register`, `RunOptions`, `(*App).RunWithSignals`, `(*App).RunContext`, `ErrAppRunning` |
 | Legacy | package-level `Register` / `RunContext`, `Run`, `RegisterProcess`, `GetInstance` (deprecated) |
+
+`RunOptions.LoadProperties` calls `LoadProperties()` with the previously
+configured global registry/file settings. Set `RunLifecycles: false` only when
+the caller intentionally wants to block on the context without starting or
+stopping registered components. `StopTimeout` defaults to 30 seconds.
+`ConfigLoader` is the isolated alternative to the global property registry.
 
 ## Documentation
 
@@ -169,11 +175,17 @@ CI tests Go 1.24.13 and 1.27.1, then runs the nested example, golangci-lint v2.1
 
 ## Migration
 
-Deprecated APIs remain in v1.x for compatibility. New services should use `LoadProperties`, `Once`/`OnceValue`, `NewApp` with `Lifecycle`, and a local `internal/bootstrap` package.
+Deprecated APIs remain in v2 for migration compatibility. New services should
+use `LoadProperties`, `Once`/`OnceValue`, `NewApp` with `Lifecycle`, and a local
+`internal/bootstrap` package.
 
-See [docs/MIGRATION.md](docs/MIGRATION.md) for step-by-step upgrades and the planned v2 breaking changes.
+See [docs/MIGRATION.md](docs/MIGRATION.md) for step-by-step v1 → v2 upgrades
+and replacements for APIs that may be removed in a later major.
 
-Package-level `Register`, `RunContext`, and `RunWithSignals` still target a shared default `App` in v1. Prefer `NewApp()` so tests and processes can isolate lifecycles. `ResetApp` is for tests only and must not run during an active global run.
+Package-level `Register`, `RunContext`, and `RunWithSignals` still target a
+shared default `App` in v2. Prefer `NewApp()` so tests and processes can isolate
+lifecycles. A concurrent run on the same App returns `ErrAppRunning`.
+`ResetApp` is for tests only and must not run during an active global run.
 
 ## License
 

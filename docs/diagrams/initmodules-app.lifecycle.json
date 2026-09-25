@@ -21,8 +21,8 @@
       {
         "id": "failure",
         "label": "Fallo de Start",
-        "focus": ["starting", "start_failed", "stopping"],
-        "note": "Error en Start dispara stopAll de los ya iniciados y puede reintentarse."
+        "focus": ["starting", "start_failed", "idle"],
+        "note": "Error en Start hace rollback de los iniciados, termina el run y permite reintentar."
       }
     ]
   },
@@ -93,15 +93,6 @@
       "tag": "pause"
     },
     {
-      "id": "busy",
-      "type": "waiting",
-      "label": "Busy",
-      "sublabel": "ErrAppRunning",
-      "lane": "waiting",
-      "col": 1,
-      "tag": "reject"
-    },
-    {
       "id": "start_failed",
       "type": "failure",
       "label": "Start failed",
@@ -114,17 +105,8 @@
     {
       "id": "aborted",
       "type": "failure",
-      "label": "Aborted",
-      "sublabel": "Stop con error",
-      "lane": "terminal",
-      "col": 0,
-      "tag": "terminal"
-    },
-    {
-      "id": "timed_out",
-      "type": "failure",
-      "label": "Timed out",
-      "sublabel": "StopTimeout",
+      "label": "Stop errors",
+      "sublabel": "join / timeout",
       "lane": "terminal",
       "col": 1,
       "tag": "terminal"
@@ -141,13 +123,6 @@
       "route": "straight"
     },
     {
-      "id": "t-busy",
-      "from": "stopping",
-      "to": "busy",
-      "variant": "default",
-      "route": "drop"
-    },
-    {
       "id": "t-start-fail",
       "from": "starting",
       "to": "start_failed",
@@ -159,25 +134,15 @@
     {
       "id": "t-fail-stop",
       "from": "start_failed",
-      "to": "running",
+      "to": "idle",
       "variant": "emphasis",
       "fromSide": "left",
-      "toSide": "top",
-      "via": [[20, 385], [20, 80], [402, 80]]
+      "toSide": "bottom"
     },
     {
       "id": "t-abort",
-      "from": "await_signal",
+      "from": "stopping",
       "to": "aborted",
-      "variant": "security",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "via": [[480, 336], [480, 432], [402, 432]]
-    },
-    {
-      "id": "t-timeout",
-      "from": "busy",
-      "to": "timed_out",
       "variant": "security",
       "fromSide": "bottom",
       "toSide": "top",
