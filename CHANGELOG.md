@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-09-28
+
+### Changed
+
+- Direct dependency `github.com/magiconair/properties` v1.18.12 (compatible patch).
+- Completed `go.sum` checksums so `go list -m -u -mod=readonly all` can inspect updates.
+
 Proposed first public **v2** tag: **v2.0.0** (not tagged yet). Module path is
 `github.com/WilsonSayago/initModules/v2` per Go’s major-version suffix rule.
 Previous major remains `github.com/WilsonSayago/initModules@v1.0.6`.
